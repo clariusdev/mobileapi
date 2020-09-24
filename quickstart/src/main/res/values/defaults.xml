@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="default_width">400</string>
+    <string name="default_height">400</string>
+    <string name="default_compression_type">jpeg</string>
+    <integer name="default_compression_quality">80</integer>
+</resources>

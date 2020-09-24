@@ -1,0 +1,21 @@
+<resources>
+    <string name="user_fn_TOGGLE_FREEZE">freeze</string>
+    <string name="user_fn_CAPTURE_IMAGE">capture image</string>
+    <string name="user_fn_CAPTURE_CINE">capture cine</string>
+    <string name="user_fn_DEPTH_DEC">decrease depth</string>
+    <string name="user_fn_DEPTH_INC">increase depth</string>
+    <string name="user_fn_GAIN_DEC">decrease gain</string>
+    <string name="user_fn_GAIN_INC">increase gain</string>
+    <string name="user_fn_TOGGLE_AUTOGAIN">toggle auto gain</string>
+    <string name="user_fn_TOGGLE_ZOOM">toggle zoom</string>
+    <string name="user_fn_TOGGLE_FLIP">toggle flip</string>
+    <string name="user_fn_TOGGLE_CINE_PLAY">play/stop cine</string>
+    <string name="user_fn_MODE_B">b mode</string>
+    <string name="user_fn_MODE_M">m mode</string>
+    <string name="user_fn_MODE_CFI">color doppler</string>
+    <string name="user_fn_MODE_PDI">power doppler</string>
+    <string name="user_fn_MODE_PW">pw doppler</string>
+    <string name="user_fn_MODE_ELASTOGRAPHY">elastography</string>
+    <string name="user_fn_SET_DEPTH">set depth</string>
+    <string name="user_fn_SET_GAIN">set gain</string>
+</resources>

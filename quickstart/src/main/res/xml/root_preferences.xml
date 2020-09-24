@@ -1,0 +1,35 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory app:title="@string/settings_category_title_imaging">
+
+        <EditTextPreference
+            app:defaultValue="@string/default_width"
+            app:key="image_width"
+            app:title="@string/settings_title_width"
+            app:useSimpleSummaryProvider="true" />
+
+        <EditTextPreference
+            app:defaultValue="@string/default_height"
+            app:key="image_height"
+            app:title="@string/settings_title_height"
+            app:useSimpleSummaryProvider="true" />
+
+        <ListPreference
+            app:defaultValue="@string/default_compression_type"
+            app:key="image_compression_type"
+            app:title="@string/settings_title_compression_type"
+            app:useSimpleSummaryProvider="true" />
+
+        <SeekBarPreference
+            app:min="0"
+            android:max="100"
+            app:defaultValue="@integer/default_compression_quality"
+            app:showSeekBarValue="true"
+            app:key="image_compression_quality"
+            app:title="@string/settings_title_compression_quality"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+</PreferenceScreen>

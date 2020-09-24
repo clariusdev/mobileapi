@@ -1,0 +1,22 @@
+<resources>
+    <string name="app_name">Clarius Quickstart</string>
+    <string name="menu_action_settings">Settings</string>
+    <string name="menu_action_disconnect">Disconnect</string>
+    <string name="menu_action_connect">Connect</string>
+    <string name="settings_activity_title">Settings</string>
+    <string name="settings_category_title_imaging">Imaging</string>
+    <string name="settings_title_width">Width</string>
+    <string name="settings_title_height">Height</string>
+    <string name="settings_title_compression_type">Compression type</string>
+    <string name="settings_title_compression_quality">Compression quality</string>
+    <string name="desc_image">Where the ultrasound image will be displayed</string>
+    <string name="menu_action_ask_scan_area">Ask scan area</string>
+    <string name="menu_action_ask_scan_convert">Ask scan conversion</string>
+    <string name="menu_action_ask_probe_info">Ask probe info</string>
+    <string name="menu_action_ask_depth">Ask depth</string>
+    <string name="menu_action_ask_gain">Ask gain</string>
+    <string name="menu_user_fn">User Fn</string>
+    <string name="dialog_value_title">Value to send</string>
+    <string name="dialog_value_confirm">Send</string>
+    <string name="dialog_value_cancel">Cancel</string>
+</resources>

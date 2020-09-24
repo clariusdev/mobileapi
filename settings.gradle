@@ -1,0 +1,3 @@
+include ':mobileapi'
+include ':quickstart'
+rootProject.name = "Mobile API Quickstart"
