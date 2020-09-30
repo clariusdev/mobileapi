@@ -1,36 +1,36 @@
 Clarius Mobile API
 ==================
 
-The mobile API allows third party mobile applications to obtain the B-mode images produced by a Clarius Ultrasound Scanner in real time.
+The Mobile API allows third party applications to obtain images produced by a Clarius Ultrasound Scanner in real time.
 It also supports sending user commands such as changing the imaging depth or taking a capture.
 
 # Prerequisites
 
 - [Clarius Ultrasound Scanner](https://clarius.com/)
 - [Clarius App for Android](https://play.google.com/store/apps/details?id=me.clarius.clarius)
-- The Clarius 3rd party mobile license (contact [Clarius](https://clarius.com/ca/contact/) to obtain it)
+- A valid license for the mobile API (managed per scanner)
 
 # Architecture
 
-The Mobile API communicates with the _Clarius App_ rather than directly with the scanner.
+The Mobile API communicates with the _Clarius App_ instead of the ultrasound scanner directly (as is the case when using the Cast API).
 Therefore, the Clarius App must be installed and running on the same Android device.
-The Clarius App takes care of connecting to the probe and pre-processing the images before serving them with the Mobile API.
+The Clarius App takes care of connecting to the probe and pre-processing the images before serving them through the API.
 
                             +-----------------------+
                             |    Android Device     |
                             |                       |
     +---------+             |    +-------------+    |
-    |         |  U/S images |    |             |    |
+    |         |   Images    |    |             |    |
     |  Probe  +----------------->+ Clarius App |    |
-    |         |             |    |             |    |
+    |         | (via Wi-Fi) |    |             |    |
     +---------+             |    +-------------+    |
                             |    | Mobile API  |    |
                             |    +----+---+----+    |
                             |         |   ^         |
-                            | B-images|   |Commands |
+                            |   Images|   |Commands |
                             |         v   |         |
                             |    +----+---+----+    |
-                            |    | Third Party |    |
+                            |    |  3rd Party  |    |
                             |    |     App     |    |
                             |    +-------------+    |
                             |                       |
@@ -58,9 +58,9 @@ All messages and their associated payload are described in the [MobileApi.java](
 
 # Licensing
 
-The service operates only when the Clarius App is connected to a scanner with the appropriate 3rd party application license.
+The service operates only when the Clarius App is connected to a scanner with the appropriate license.
 
-However, the service accepts binding requests from clients even when no proper license is active to accommodate workflows where the license is removed for legitimate reasons, for example when a probe is disconnected to save battery. In that case, the service enters a restricted mode where it stops handling requests and sending update, but will resume normal operation as soon as a licensed scanner is connected again.
+However, the service accepts binding requests from clients even when no proper license is active to accommodate workflows where the license is removed for legitimate reasons, for example when a probe is disconnected to save battery. In this case, the service enters a restricted mode where it stops handling requests and sending updates, but will resume normal operation as soon as a licensed scanner is connected again.
 
 The license check workflow is as follows:
 
