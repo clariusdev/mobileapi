@@ -90,7 +90,7 @@ public class ImageFragment extends Fragment {
         // Note: width and height are stored as strings in the Android preferences, not integers.
         String widthString = p.getString("image_width", res.getString(R.string.default_width));
         if (null == widthString) throw new AssertionError();
-        String heightString = p.getString("image_width", res.getString(R.string.default_width));
+        String heightString = p.getString("image_height", res.getString(R.string.default_width));
         if (null == heightString) throw new AssertionError();
         return new ImageConfig(Integer.parseInt(widthString), Integer.parseInt(heightString))
                 .compressionType(p.getString("image_compression_type", res.getString(R.string.default_compression_type)))
