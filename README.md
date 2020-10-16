@@ -54,13 +54,15 @@ The sequence of messages and their content constitute the communication protocol
 4. During operation, the server will send the image data to the client (`MSG_NEW_PROCESSED_IMAGE`) and other notable events such as button presses, freeze state, etc.
 5. The client can request the execution of predefined functions such as "increase depth" or "capture image" (`MSG_USER_FN`).
 
-All messages and their associated payload are described in the [MobileApi.java](mobileapi/src/main/java/MobileApi.java) file.
+All messages and their associated payload are described in the [MobileApi.java](mobileapi/src/main/java/me/clarius/mobileapi/MobileApi.java) file.
+
 
 # Licensing
 
 The service operates only when the Clarius App is connected to a scanner with the appropriate license.
 
-However, the service accepts binding requests from clients even when no proper license is active to accommodate workflows where the license is removed for legitimate reasons, for example when a probe is disconnected to save battery. In this case, the service enters a restricted mode where it stops handling requests and sending updates, but will resume normal operation as soon as a licensed scanner is connected again.
+However, the service accepts binding requests from clients even when no proper license is active to accommodate workflows where the license is removed for legitimate reasons, for example when a probe is disconnected to save battery.
+In this case, the service enters a restricted mode where it stops handling requests and sending updates, but will resume normal operation as soon as a licensed scanner is connected again.
 
 The license check workflow is as follows:
 
