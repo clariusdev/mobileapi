@@ -8,7 +8,7 @@ It also supports sending user commands such as changing the imaging depth or tak
 
 - [Clarius Ultrasound Scanner](https://clarius.com/)
 - [Clarius App for Android](https://play.google.com/store/apps/details?id=me.clarius.clarius)
-- A valid license for the mobile API (managed per scanner)
+- A valid Mobile API license (managed per scanner)
 
 # Architecture
 
