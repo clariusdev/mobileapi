@@ -4,11 +4,38 @@ Clarius Mobile API
 The Mobile API allows third party applications to obtain images produced by a Clarius Ultrasound Scanner in real time.
 It also supports sending user commands such as changing the imaging depth or taking a capture.
 
+
 # Prerequisites
 
 - [Clarius Ultrasound Scanner](https://clarius.com/)
 - [Clarius App for Android](https://play.google.com/store/apps/details?id=me.clarius.clarius)
 - A valid Mobile API license (managed per scanner)
+
+Note: will not work with virtual scanners.
+
+
+# Quickstart
+
+1. On your Android device, start the Clarius App and connect to your scanner.
+
+2. Open this project in Android Studio, select the Quickstart App and run it on your Android device.
+
+3. Optional: run both apps in split screen, otherwise let the Clarius App run in the background.
+
+4. In the Quickstart App, select Menu `⋮` > `connect` to start receiving images.
+
+<img height="450px" alt="connection menu" src="images/quickstart_connect.png"/>
+
+<img height="450px" alt="split screen imaging" src="images/quickstart_split_screen.png"/>
+
+Usage:
+
+* Function menu `∑`: configure imaging like depth, gain or ultrasound mode.
+
+* Menu `⋮` > `Ask *`: obtain imaging information, like the current depth or gain.
+
+* Menu `⋮` > `settings`: configure the image sent over the Mobile API (this is the image rendered by the Clarius App and transmitted over the Mobile API).
+
 
 # Architecture
 
@@ -46,6 +73,7 @@ The interface to the bound service is provided by an Android _Messenger_.
 Android Messengers allow interprocess communications (IPC) by exchanging `Message` objects containing an action code and a payload.
 The sequence of messages and their content constitute the communication protocol which is described below.
 
+
 # Protocol
 
 1. The client binds to the service by calling `Context.bindService()` and receives the server's `IBinder`. This `IBinder` is used to create a Messenger that can send messages _to the server_.
@@ -74,8 +102,3 @@ The license check workflow is as follows:
 4. If the license status changes during operation, the service sends `MSG_LICENSE_UPDATE` and changes its mode of operation:
     - if the license becomes inactive: the service clears the image configuration and enter restricted mode;
     - if the license becomes active: the service resumes normal operations, but the client must re-send the image configuration.
-
-# Example App
-
-The Android app provided in this repository demonstrates all features of the Mobile API.
-It uses Gradle as its build tool so it can be opened directly in Android Studio.
