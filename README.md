@@ -24,7 +24,6 @@ Note: will not work with virtual scanners.
 
 4. In the Quickstart App, select Menu `⋮` > `connect` to start receiving images.
 
-|:---|:---|
 |<img height="450px" alt="connection menu" src="images/quickstart_connect.png"/>|<img height="450px" alt="split screen imaging" src="images/quickstart_split_screen.png"/>|
 
 Usage:
