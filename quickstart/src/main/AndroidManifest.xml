@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="me.clarius.mobileapi.quickstart">
 
+    <queries>
+        <package android:name="me.clarius.clarius" />
+    </queries>
+
     <application
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
