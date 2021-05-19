@@ -18,14 +18,14 @@
         android:title="@string/menu_action_settings"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_download_raw_data"
+        android:orderInCategory="100"
+        android:title="@string/menu_action_download_raw_data"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_ask_scan_area"
         android:orderInCategory="100"
         android:title="@string/menu_action_ask_scan_area"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_ask_scan_convert"
-        android:orderInCategory="100"
-        android:title="@string/menu_action_ask_scan_convert"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_ask_probe_info"

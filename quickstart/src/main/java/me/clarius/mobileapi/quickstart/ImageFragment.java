@@ -7,8 +7,8 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.PointF;
 import android.graphics.Rect;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -31,6 +31,7 @@ import me.clarius.mobileapi.ProcessedImageInfo;
 import me.clarius.mobileapi.ProbeInfo;
 import me.clarius.mobileapi.quickstart.helper.ImageConfig;
 import me.clarius.mobileapi.quickstart.helper.MobileApiHelper;
+import me.clarius.mobileapi.quickstart.helper.RawDataDownload;
 
 public class ImageFragment extends Fragment {
 
@@ -60,11 +61,11 @@ public class ImageFragment extends Fragment {
         IntentFilter filter = new IntentFilter(Intents.CONNECT);
         filter.addAction(Intents.DISCONNECT);
         filter.addAction(Intents.ASK_SCAN_AREA);
-        filter.addAction(Intents.ASK_SCAN_CONVERT);
         filter.addAction(Intents.ASK_PROBE_INFO);
         filter.addAction(Intents.ASK_DEPTH);
         filter.addAction(Intents.ASK_GAIN);
         filter.addAction(Intents.USER_FN);
+        filter.addAction(Intents.DOWNLOAD_RAW_DATA);
         requireContext().registerReceiver(mReceiver, filter);
     }
 
@@ -93,8 +94,9 @@ public class ImageFragment extends Fragment {
         String heightString = p.getString("image_height", res.getString(R.string.default_width));
         if (null == heightString) throw new AssertionError();
         return new ImageConfig(Integer.parseInt(widthString), Integer.parseInt(heightString))
-                .compressionType(p.getString("image_compression_type", res.getString(R.string.default_compression_type)))
-                .compressionQuality(p.getInt("image_compression_quality", res.getInteger(R.integer.default_compression_quality)));
+            .compressionType(p.getString("image_compression_type", res.getString(R.string.default_compression_type)))
+            .compressionQuality(p.getInt("image_compression_quality", res.getInteger(R.integer.default_compression_quality)))
+            .separateOverlays(p.getBoolean("image_separate_overlays", res.getBoolean(R.bool.default_separate_overlays)));
     }
 
     SharedPreferences.OnSharedPreferenceChangeListener mPreferenceListener = (sharedPreferences, key) -> {
@@ -180,11 +182,6 @@ public class ImageFragment extends Fragment {
             Log.i(TAG, log.toString());
         }
         @Override
-        public void onScanConvertChanged(PointF originMicrons, double pixelSizeMicrons) {
-            String log = "Scan convert origin: " + originMicrons + ", pixel size: " + pixelSizeMicrons;
-            Log.i(TAG, log);
-        }
-        @Override
         public void onError(String msg) {
             Toast.makeText(getContext(), "Error: " + msg, Toast.LENGTH_SHORT).show();
         }
@@ -195,6 +192,18 @@ public class ImageFragment extends Fragment {
             if (hasLicense) {
                 mClarius.sendImageConfig(makeImageConfig(getDefaultSharedPreferences()));
             }
+        }
+        @Override
+        public void onRawDataDownloaded(RawDataDownload download) {
+            boolean available = download.available;
+            long packageSize = download.packageSize;
+            String packageExtension = download.packageExtension;
+            String log = "Raw data available? " + available + " size: " + packageSize + " extension: " + packageExtension;
+            Toast.makeText(getContext(), log, Toast.LENGTH_SHORT).show();
+            download.shareFile(getActivity());
+        }
+        @Override
+        public void onRawDataDownloadProgress(int progress) {
         }
     };
 
@@ -212,9 +221,6 @@ public class ImageFragment extends Fragment {
             else if (Intents.ASK_SCAN_AREA.equals(action)) {
                 mClarius.askScanArea();
             }
-            else if (Intents.ASK_SCAN_CONVERT.equals(action)) {
-                mClarius.askScanConvert();
-            }
             else if (Intents.ASK_PROBE_INFO.equals(action)) {
                 mClarius.askProbeInfo();
             }
@@ -223,6 +229,9 @@ public class ImageFragment extends Fragment {
             }
             else if (Intents.ASK_GAIN.equals(action)) {
                 mClarius.askGain();
+            }
+            else if (Intents.DOWNLOAD_RAW_DATA.equals(action)) {
+                mClarius.downloadRawData();
             }
             else if (Intents.USER_FN.equals(action)) {
                 Bundle extras = intent.getExtras();

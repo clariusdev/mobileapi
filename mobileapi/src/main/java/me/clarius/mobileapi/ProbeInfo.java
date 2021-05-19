@@ -7,16 +7,23 @@ import android.os.Parcelable;
 
 public class ProbeInfo implements Parcelable
 {
-
-    public int version;             //!< version (1 = Clarius 1st Generation, 2 = Clarius HD)
-    public int elements;            //!< number of probe elements
-    public int pitch;               //!< element pitch
-    public int radius;              //!< radius in mm
+    public String model;        //!< model type
+    public String serial;       //!< serial #
+    public int battery;         //!< battery percentage
+    public int temperature;     //!< temperature percentage (of max)
+    public int version;         //!< version (1 = Clarius 1st Generation, 2 = Clarius HD)
+    public int elements;        //!< number of probe elements
+    public int pitch;           //!< element pitch
+    public int radius;          //!< radius in mm
 
     //! Default constructor sets everything to zero.
     //! Note: required for JNI for Android 8 API 26.
     public ProbeInfo()
     {
+        model = "";
+        serial = "";
+        battery = 0;
+        temperature = 0;
         version = 0;
         elements = 0;
         pitch = 0;
@@ -43,6 +50,11 @@ public class ProbeInfo implements Parcelable
         elements = in.readInt();
         pitch = in.readInt();
         radius = in.readInt();
+        // Added in version 8.1.0:
+        temperature = in.readInt();
+        battery = in.readInt();
+        serial = in.readString();
+        model = in.readString();
     }
 
     @Override
@@ -52,6 +64,11 @@ public class ProbeInfo implements Parcelable
         out.writeInt(elements);
         out.writeInt(pitch);
         out.writeInt(radius);
+        // Added in version 8.1.0:
+        out.writeInt(temperature);
+        out.writeInt(battery);
+        out.writeString(serial);
+        out.writeString(model);
     }
 
     @Override

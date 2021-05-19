@@ -9,13 +9,15 @@
     <string name="settings_title_height">Height</string>
     <string name="settings_title_compression_type">Compression type</string>
     <string name="settings_title_compression_quality">Compression quality</string>
+    <string name="settings_title_separate_overlays">Separate overlays</string>
+    <string name="settings_subtitle_separate_overlays">If set, two images are sent: one with overlays and one without.</string>
     <string name="desc_image">Where the ultrasound image will be displayed</string>
     <string name="menu_action_ask_scan_area">Ask scan area</string>
-    <string name="menu_action_ask_scan_convert">Ask scan conversion</string>
     <string name="menu_action_ask_probe_info">Ask probe info</string>
     <string name="menu_action_ask_depth">Ask depth</string>
     <string name="menu_action_ask_gain">Ask gain</string>
     <string name="menu_user_fn">User Fn</string>
+    <string name="menu_action_download_raw_data">Download raw data</string>
     <string name="dialog_value_title">Value to send</string>
     <string name="dialog_value_confirm">Send</string>
     <string name="dialog_value_cancel">Cancel</string>

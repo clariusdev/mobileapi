@@ -6,8 +6,8 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.PointF;
 import android.graphics.Rect;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -62,6 +62,9 @@ public class MobileApiHelper {
     /** Observer set by the user of this class. */
     private Observer mObserver = null;
 
+    /** Keep track of raw data download requests. */
+    private RawDataDownload mRawDataDownload = null;
+
     /**
      * Send important events to client.
      */
@@ -73,10 +76,17 @@ public class MobileApiHelper {
         void onNewProcessedImage(Bitmap imageData, ProcessedImageInfo imageInfo, ArrayList<PosInfo> posInfo);
         void onButtonEvent(int buttonId, int clicks, int longPress);
         void onScanAreaChanged(Rect rect);
-        void onScanConvertChanged(PointF originMicrons, double pixelSizeMicrons);
         void onProbeInfoChanged(ProbeInfo probeInfo);
         void onError(String msg);
         void onLicenseChanged(boolean hasLicense);
+        void onRawDataDownloaded(RawDataDownload download);
+        void onRawDataDownloadProgress(int progress);
+    }
+
+    /** Helper to report errors. */
+    private void logAndReportError(String message) {
+        Log.e(TAG, message);
+        if (null != mObserver) mObserver.onError(message);
     }
 
     /**
@@ -107,8 +117,7 @@ public class MobileApiHelper {
         boolean res = mContext.bindService(i, mConnection, Context.BIND_AUTO_CREATE);
         if (!res)
         {
-            Log.e(TAG, "Could not find the Clarius Mobile API service");
-            if (null != mObserver) mObserver.onError("Could not find the Clarius Mobile API service");
+            logAndReportError("Could not find the Clarius Mobile API service. Check the package name in the gradle.properties file.");
             mContext.unbindService(mConnection);
         }
     }
@@ -138,7 +147,12 @@ public class MobileApiHelper {
     public void sendImageConfig(ImageConfig config) {
         if (!mBound)
             return;
-        Log.v(TAG, "Sending image config " + config.bundle().getSize(MobileApi.KEY_IMAGE_SIZE) + " " + config.bundle().getString(MobileApi.KEY_COMPRESSION_TYPE) + " " + config.bundle().getInt(MobileApi.KEY_COMPRESSION_QUALITY));
+        Log.v(TAG, "Sending image config"
+            + " " + config.bundle().getSize(MobileApi.KEY_IMAGE_SIZE)
+            + " " + config.bundle().getString(MobileApi.KEY_COMPRESSION_TYPE)
+            + " " + config.bundle().getInt(MobileApi.KEY_COMPRESSION_QUALITY)
+            + " separateOverlay=" + config.bundle().getBoolean(MobileApi.KEY_SEPARATE_OVERLAYS)
+        );
         Message msg = Message.obtain(null, MobileApi.MSG_CONFIGURE_IMAGE);
         msg.replyTo = mMessenger;
         msg.setData(config.bundle());
@@ -162,25 +176,6 @@ public class MobileApiHelper {
         Message msg = Message.obtain(null, MobileApi.MSG_GET_SCAN_AREA);
         msg.replyTo = mMessenger;
         setCallbackParam(msg, Requests.ASK_SCAN_AREA);
-        try {
-            mService.send(msg);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Ask the service to give us the current scan conversion. Does nothing if not bound.
-     *
-     * Also demonstrating the use of Message.arg1: it will be copied back in the reply.
-     */
-    public void askScanConvert() {
-        if (!mBound)
-            return;
-        Log.v(TAG, "Asking scan conversion");
-        Message msg = Message.obtain(null, MobileApi.MSG_GET_SCAN_CONVERT);
-        msg.replyTo = mMessenger;
-        setCallbackParam(msg, Requests.ASK_SCAN_CONVERT);
         try {
             mService.send(msg);
         } catch (RemoteException e) {
@@ -269,6 +264,43 @@ public class MobileApiHelper {
     }
 
     /**
+     * Ask the service to download raw data from the probe and save it in a file. Does nothing if not bound.
+     *
+     * Note: this command does not start the raw data collection.
+     * This must be done manually from the Clarius app.
+     */
+    public void downloadRawData() {
+        if (!mBound)
+            return;
+        if (null != mRawDataDownload) {
+            Log.e(TAG, "Raw data download already in progress");
+            return;
+        }
+        Log.v(TAG, "Downloading raw data");
+        try {
+            mRawDataDownload = RawDataDownload.create(mContext, CLARIUS_PACKAGE_NAME, 0, 0);
+        }
+        catch (Throwable e) {
+            Log.e(TAG, "Error while preparing raw data download location");
+            e.printStackTrace();
+            return;
+        }
+        Message msg = Message.obtain(null, MobileApi.MSG_DOWNLOAD_RAW_DATA);
+        msg.replyTo = mMessenger;
+        setCallbackParam(msg, Requests.DOWNLOAD_RAW_DATA);
+        Bundle data = new Bundle();
+        data.putLong(MobileApi.KEY_START_FRAME, mRawDataDownload.startFrame);
+        data.putLong(MobileApi.KEY_END_FRAME, mRawDataDownload.endFrame);
+        data.putParcelable(MobileApi.KEY_WRITABLE_URI, mRawDataDownload.writableUri);
+        msg.setData(data);
+        try {
+            mService.send(msg);
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * Callback parameters used to map outbound messages to return status messages from the service.
      *
      * How it works:
@@ -284,9 +316,9 @@ public class MobileApiHelper {
         static final int CONFIGURE_IMAGE = 3;
         static final int ASK_PROBE_INFO = 4;
         static final int RUN_USER_FN = 5;
-        static final int ASK_SCAN_CONVERT = 6;
         static final int ASK_DEPTH = 7;
         static final int ASK_GAIN = 8;
+        static final int DOWNLOAD_RAW_DATA = 9;
         static String toText(int value) {
             switch (value) {
                 case REGISTER: return "REGISTER";
@@ -294,27 +326,32 @@ public class MobileApiHelper {
                 case CONFIGURE_IMAGE: return "CONFIGURE_IMAGE";
                 case ASK_PROBE_INFO: return "ASK_PROBE_INFO";
                 case RUN_USER_FN: return "RUN_USER_FN";
-                case ASK_SCAN_CONVERT: return "ASK_SCAN_CONVERT";
                 case ASK_DEPTH: return "ASK_DEPTH";
                 case ASK_GAIN: return "ASK_GAIN";
+                case DOWNLOAD_RAW_DATA: return "DOWNLOAD_RAW_DATA";
             }
-            throw new AssertionError();
+            throw new AssertionError("Unknown request code " + value);
         }
     }
 
     /** Showing how to set the callback parameter that will be returned in MSG_RETURN_STATUS message. */
-    private void setCallbackParam(Message msg, int param) {
+    static private void setCallbackParam(Message msg, int param) {
         msg.arg1 = param;
     }
 
     /** Showing how to get the return status from MSG_RETURN_STATUS message. */
-    private int getReturnStatus(Message msg) {
+    static private int getReturnStatus(Message msg) {
         return msg.arg2;
     }
 
-    // Showing how to get the callback parameter from MSG_RETURN_STATUS message.
-    private int getCallbackParam(Message msg) {
+    /** Showing how to get the callback parameter from MSG_RETURN_STATUS message. */
+    static private int getCallbackParam(Message msg) {
         return msg.arg1;
+    }
+
+    /** Helper to get the text associated with a callback parameter. */
+    static private String getCallbackParamText(Message msg) {
+        return Requests.toText(getCallbackParam(msg));
     }
 
     /** Class for interacting with the main interface of the service. */
@@ -341,11 +378,8 @@ public class MobileApiHelper {
         }
         @Override
         public void onNullBinding(ComponentName name) {
-            // Called when attempting to start the Clarius Service without the proper 3rd party app license:
-            // The Clarius Service.onBind() method will return null, causing Android to call back this method.
-            Log.v(TAG, "Clarius service refused to start");
             mContext.unbindService(mConnection);
-            mObserver.onError("Clarius service refused to start");
+            logAndReportError("Cannot bind to '" + name.getShortClassName() + "'");
         }
     };
 
@@ -409,7 +443,7 @@ public class MobileApiHelper {
                 return true;
             }
             if (MobileApi.MSG_RETURN_SCAN_AREA == msg.what) {
-                Log.v(TAG, "MSG_RETURN_SCAN_AREA returned with callback param: " + getCallbackParam(msg));
+                Log.v(TAG, "MSG_RETURN_SCAN_AREA returned with callback param: " + getCallbackParamText(msg));
                 try {
                     onScanAreaChanged(msg.getData());
                 } catch (Throwable e) {
@@ -418,7 +452,7 @@ public class MobileApiHelper {
                 return true;
             }
             if (MobileApi.MSG_RETURN_PROBE_INFO == msg.what) {
-                Log.v(TAG, "MSG_RETURN_PROBE_INFO returned with callback param: " + getCallbackParam(msg));
+                Log.v(TAG, "MSG_RETURN_PROBE_INFO returned with callback param: " + getCallbackParamText(msg));
                 try {
                     onProbeInfoChanged(msg.getData());
                 } catch (Throwable e) {
@@ -427,28 +461,11 @@ public class MobileApiHelper {
                 return true;
             }
             if (MobileApi.MSG_NO_LICENSE == msg.what) {
-                mObserver.onError("No license");
-                return true;
-            }
-            if (MobileApi.MSG_SCAN_CONVERT_CHANGED == msg.what) {
-                try {
-                    onScanConvertChanged(msg.getData());
-                } catch (Throwable e) {
-                    Log.e(TAG, "Error when receiving scan conversion: " + e);
-                }
-                return true;
-            }
-            if (MobileApi.MSG_RETURN_SCAN_CONVERT == msg.what) {
-                Log.v(TAG, "MSG_RETURN_SCAN_CONVERT returned with callback param: " + getCallbackParam(msg));
-                try {
-                    onScanConvertChanged(msg.getData());
-                } catch (Throwable e) {
-                    Log.e(TAG, "Error when receiving scan conversion: " + e);
-                }
+                logAndReportError("No license");
                 return true;
             }
             if (MobileApi.MSG_RETURN_DEPTH == msg.what) {
-                Log.v(TAG, "MSG_RETURN_DEPTH returned with callback param: " + getCallbackParam(msg));
+                Log.v(TAG, "MSG_RETURN_DEPTH returned with callback param: " + getCallbackParamText(msg));
                 try {
                     onDepthChanged(msg.getData());
                 } catch (Throwable e) {
@@ -457,7 +474,7 @@ public class MobileApiHelper {
                 return true;
             }
             if (MobileApi.MSG_RETURN_GAIN == msg.what) {
-                Log.v(TAG, "MSG_RETURN_GAIN returned with callback param: " + getCallbackParam(msg));
+                Log.v(TAG, "MSG_RETURN_GAIN returned with callback param: " + getCallbackParamText(msg));
                 try {
                     onGainChanged(msg.getData());
                 } catch (Throwable e) {
@@ -467,17 +484,28 @@ public class MobileApiHelper {
             }
             if (MobileApi.MSG_ERROR == msg.what) {
                 Bundle data = msg.getData();
-                String error = null != data ? data.getString(MobileApi.KEY_MESSAGE, "<unknown>") : "<unknown>";
-                Log.e(TAG, "Error from service: " + error);
-                if (null != mObserver) {
-                    mObserver.onError(error);
-                }
+                String error = null != data ? data.getString(MobileApi.KEY_ERROR_MESSAGE, "<unknown>") : "<unknown>";
+                logAndReportError("Service error: " + error);
                 return true;
             }
             if (MobileApi.MSG_LICENSE_CHANGED == msg.what) {
                 if (null != mObserver) {
                     mObserver.onLicenseChanged(msg.arg1 == 1);
                 }
+                return true;
+            }
+            if (MobileApi.MSG_RETURN_RAW_DATA == msg.what) {
+                Log.v(TAG, "MSG_RETURN_RAW_DATA returned with callback param: " + getCallbackParamText(msg));
+                try {
+                    onRawDataDownloaded(msg.getData());
+                } catch (Throwable e) {
+                    Log.e(TAG, "Error when receiving raw data: " + e);
+                }
+                return true;
+            }
+            if (MobileApi.MSG_RAW_DATA_DOWNLOAD_PROGRESS == msg.what) {
+                Log.v(TAG, "MSG_RAW_DATA_DOWNLOAD_PROGRESS returned with callback param: " + getCallbackParamText(msg) + " progress: " + msg.arg2);
+                mObserver.onRawDataDownloadProgress(msg.arg2);
                 return true;
             }
             return false;
@@ -559,28 +587,37 @@ public class MobileApiHelper {
         mObserver.onProbeInfoChanged(probeInfo);
     }
 
-    /** Extract the scan conversion received form the service. */
-    private void onScanConvertChanged(Bundle data) {
-        if (null == mObserver)
-            return;
-        PointF origin = data.getParcelable(MobileApi.KEY_ORIGIN_MICRONS);
-        double size = data.getDouble(MobileApi.KEY_PIXEL_SIZE_MICRONS);
-        mObserver.onScanConvertChanged(origin, size);
-    }
-
     /** Extract the depth info received from the service. */
     private void onDepthChanged(Bundle data) {
         if (null == mObserver)
             return;
-        double cm = data.getDouble(MobileApi.KEY_DEPTH_CM);
-        mObserver.onDepthChanged(cm);
+        mObserver.onDepthChanged(data.getDouble(MobileApi.KEY_DEPTH_CM));
     }
 
     /** Extract the gain info received from the service. */
     private void onGainChanged(Bundle data) {
         if (null == mObserver)
             return;
-        double cm = data.getDouble(MobileApi.KEY_GAIN);
-        mObserver.onGainChanged(cm);
+        mObserver.onGainChanged(data.getDouble(MobileApi.KEY_GAIN));
+    }
+
+    /** Extract the raw data info received from the service. */
+    private void onRawDataDownloaded(Bundle data) {
+        if (null == mRawDataDownload)
+            throw new AssertionError("Received raw data download completion but request is missing");
+        RawDataDownload download = mRawDataDownload;
+        mRawDataDownload = null;
+        download.revokePermissions();
+        if (data.containsKey(MobileApi.KEY_ERROR_MESSAGE)) {
+            logAndReportError("Raw data download failed: " + data.getString(MobileApi.KEY_ERROR_MESSAGE));
+        }
+        else {
+            boolean available = data.getBoolean(MobileApi.KEY_AVAILABLE, false);
+            long packageSize = data.getLong(MobileApi.KEY_PACKAGE_SIZE, -1);
+            String packageExtension = data.getString(MobileApi.KEY_PACKAGE_EXTENSION);
+            Log.d(TAG, "Raw data available? " + available + ", size: " + packageSize + ", extension: " + packageExtension);
+            download.onReceived(available, packageSize, packageExtension);
+            mObserver.onRawDataDownloaded(download);
+        }
     }
 }

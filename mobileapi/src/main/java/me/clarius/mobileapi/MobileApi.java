@@ -3,6 +3,14 @@ package me.clarius.mobileapi;
 import java.lang.String;
 
 //! Specify the Clarius Mobile API Service protocol.
+//!
+//! Changes in version 8.0.1:
+//!
+//! - Renamed KEY_MESSAGE to KEY_ERROR_MESSAGE.
+//! - Added RF data messages MSG_DOWNLOAD_RAW_DATA and MSG_RETURN_RAW_DATA.
+//! - Added an option to obtain overlays in a separate image with KEY_SEPARATE_OVERLAYS.
+//! - Scan convert info is now transmitted with each image.
+//!     Removed MSG_GET_SCAN_CONVERT, MSG_SCAN_CONVERT_CHANGED, MSG_RETURN_SCAN_CONVERT, KEY_ORIGIN_MICRONS and KEY_PIXEL_SIZE_MICRONS.
 
 public class MobileApi
 {
@@ -40,6 +48,7 @@ public class MobileApi
     //! - Bundle[KEY_IMAGE_SIZE]: android.util.Size, the requested rendering size.
     //! - Bundle[KEY_COMPRESSION_TYPE] (optional): java.lang.String, the compression type. Possible values: COMPRESSION_TYPE_JPEG, COMPRESSION_TYPE_PNG. Default: DEFAULT_COMPRESSION_TYPE.
     //! - Bundle[KEY_COMPRESSION_QUALITY] (optional): int, the compression quality between 0 (worst quality) and 100 (best quality). Default: DEFAULT_COMPRESSION_QUALITY.
+    //! - Bundle[KEY_SEPARATE_OVERLAYS] (optional): boolean, flag for separating overlays. If set, two images are sent: one with overlays and one without. Default: DEFAULT_SEPARATE_OVERLAYS. Added in version 8.0.1
     //! - Message.replyTo (optional): if set, Messenger to send the MSG_RETURN_STATUS message to.
     //! - Message.arg1 (optional): callback parameter for MSG_RETURN_STATUS.
     //!
@@ -80,15 +89,7 @@ public class MobileApi
 
     public static final int MSG_USER_FN = 6;
 
-    //! Query the service for the current scan conversion.
-    //!
-    //! The reply will be delivered with message MSG_RETURN_SCAN_CONVERT.
-    //!
-    //! Parameter(s):
-    //! - Message.replyTo: client's Messenger where the reply should be sent. This field is mandatory; if missing, the query will be ignored.
-    //! - Message.arg1 (optional): callback parameter for MSG_RETURN_SCAN_CONVERT.
-
-    public static final int MSG_GET_SCAN_CONVERT = 7;
+    // public static final int MSG_GET_SCAN_CONVERT = 7; // Removed in version 8.0.1
 
     //! Query the service for the current depth.
     //!
@@ -110,9 +111,28 @@ public class MobileApi
 
     public static final int MSG_GET_GAIN = 9;
 
+    //! Command to the service to download raw data from the probe.
+    //!
+    //! Note: this command does not start the raw data collection.
+    //! This must be done manually from the Clarius app.
+    //!
+    //! The reply will be delivered with message MSG_RETURN_RAW_DATA.
+    //!
+    //! Parameter(s):
+    //! - Bundle[KEY_START_FRAME]: long, starting frame timestamp (0 for all). Default: DEFAULT_FRAME.
+    //! - Bundle[KEY_END_FRAME]: long, ending frame timestamp (0 for all). Default: DEFAULT_FRAME.
+    //! - Bundle[KEY_WRITABLE_URI]: android.net.Uri, the file URI where the service will write the package. It must have permissions for the Clarius app.
+    //! - Message.replyTo: client's Messenger where the reply should be sent. This field is mandatory; if missing, the query will be ignored.
+    //! - Message.arg1 (optional): callback parameter for MSG_RETURN_RAW_DATA.
+    //!
+    //! \version Added in version 8.0.1
+
+    public static final int MSG_DOWNLOAD_RAW_DATA = 10;
+
     // Messages from server to client.
 
     //! Return the outcome of a command sent by the client.
+    //!
     //! The return status is sent only if the initial Message had its replyTo field set.
     //!
     //! Parameters:
@@ -150,15 +170,19 @@ public class MobileApi
 
     //! Message to the client when the scan area changes.
     //!
+    //! The scan area allows 3rd party apps to know where the B-image is displayed, this can be used to display a custom overlay.
+    //!
     //! Parameters:
-    //! - Bundle[KEY_B_IMAGE_AREA]: android.graphics.Rect, the screen coordinates of the B-Image area (spectrum area omitted). The origin is the top-left corner of the device's screen.
+    //! - Bundle[KEY_B_IMAGE_AREA]: android.graphics.Rect, location of the B-image displayed by the Clarius app in pixel coordinates, with the origin in the top left corner of the device's screen.
 
     public static final int MSG_SCAN_AREA_CHANGED = 105;
 
     //! Reply to queries MSG_GET_SCAN_AREA.
     //!
+    //! See details MSG_SCAN_AREA_CHANGED.
+    //!
     //! Parameters:
-    //! - Bundle[KEY_B_IMAGE_AREA]: android.graphics.Rect, the screen coordinates of the B-Image area (spectrum area omitted). The origin is the top-left corner of the device's screen.
+    //! - Bundle[KEY_B_IMAGE_AREA]: android.graphics.Rect, location of the B-image displayed by the Clarius app in pixel coordinates, with the origin in the top left corner of the device's screen.
     //! - Message.arg1: callback parameter copied from the Message.arg1 sent by the client.
 
     public static final int MSG_RETURN_SCAN_AREA = 106;
@@ -178,31 +202,13 @@ public class MobileApi
 
     public static final int MSG_NO_LICENSE = 108;
 
-    //! Message to the client when the scan conversion changes.
-    //!
-    //! The scan conversion contains the image's top-left corner coordinates (in microns) given in the probe's referential (whose origin is the center of the probe's imaging surface).
-    //! It also contains the physical size of a pixel (pixels are squares).
-    //! Together with the image area geometry, which is given in pixels, it can be used to compute which part of the ultrasound image is currently rendered in the app when the user zooms or translates the image.
-    //!
-    //! Parameters:
-    //! - Bundle[KEY_ORIGIN_MICRONS]: android.graphics.PointF, the coordinates in microns of image's top-left corner in the probe's referential.
-    //! - Bundle[KEY_PIXEL_SIZE_MICRONS]: double, number of microns per pixel.
-
-    public static final int MSG_SCAN_CONVERT_CHANGED = 109;
-
-    //! Reply to queries MSG_GET_SCAN_CONVERT.
-    //!
-    //! Parameters:
-    //! - Bundle[KEY_ORIGIN_MICRONS]: android.graphics.PointF, image origin coordinates in the probe's referential (in microns). Image origin: top-left corner. Probe's origin: the middle of imaging surface.
-    //! - Bundle[KEY_PIXEL_SIZE_MICRONS]: double, number of microns per pixel.
-    //! - Message.arg1: callback parameter copied from the Message.arg1 sent by the client.
-
-    public static final int MSG_RETURN_SCAN_CONVERT = 110;
+    // public static final int MSG_SCAN_CONVERT_CHANGED = 109; // Removed in version 8.0.1
+    // public static final int MSG_RETURN_SCAN_CONVERT = 110; // Removed in version 8.0.1
 
     //! Message to the client when an internal error occured.
     //!
     //! Parameters:
-    //! - Bundle[KEY_MESSAGE]: java.lang.String, the error message in English.
+    //! - Bundle[KEY_ERROR_MESSAGE]: java.lang.String, the error message in English.
 
     public static final int MSG_ERROR = 111;
 
@@ -243,11 +249,39 @@ public class MobileApi
 
     public static final int MSG_RETURN_GAIN = 116;
 
+    //! Reply to queries MSG_DOWNLOAD_RAW_DATA.
+    //!
+    //! Parameters on success and failure:
+    //! - Message.arg1: callback parameter copied from the Message.arg1 sent by the client.
+    //!
+    //! Parameters on success:
+    //! - Bundle[KEY_AVAILABLE]: boolean, indicate if requested raw data was available.
+    //! - Bundle[KEY_PACKAGE_SIZE]: long, package size in bytes.
+    //! - Bundle[KEY_PACKAGE_EXTENSION]: java.lang.String, package extension (indicates type, for example zip or tar).
+    //!
+    //! Parameters on failure:
+    //! - Bundle[KEY_ERROR_MESSAGE]: java.lang.String, error details (in English).
+    //!
+    //! \version Added in version 8.0.1
+
+    public static final int MSG_RETURN_RAW_DATA = 117;
+
+    //! Reply to queries MSG_DOWNLOAD_RAW_DATA with the current download progress.
+    //!
+    //! Parameters:
+    //! - Message.arg1: callback parameter copied from the Message.arg1 sent by the client.
+    //! - Message.arg2: int, the raw data download progress in percent [0 100]
+    //!
+    //! \version Added in version 8.0.1
+
+    public static final int MSG_RAW_DATA_DOWNLOAD_PROGRESS = 118;
+
     // Bundle keys
 
     public static final String KEY_IMAGE_SIZE = "size";
     public static final String KEY_COMPRESSION_TYPE = "compressionType";
     public static final String KEY_COMPRESSION_QUALITY = "compressionQuality";
+    public static final String KEY_SEPARATE_OVERLAYS = "separateOverlays"; //!< Added in version 8.0.1
     public static final String KEY_IMAGE_DATA = "data";
     public static final String KEY_IMAGE_INFO = "info";
     public static final String KEY_POS_INFO = "pos";
@@ -256,11 +290,17 @@ public class MobileApi
     public static final String KEY_PROBE_INFO = "probeInfo";
     public static final String KEY_USER_FN = "userFn";
     public static final String KEY_USER_PARAM = "userParam";
-    public static final String KEY_ORIGIN_MICRONS = "originMicrons";
-    public static final String KEY_PIXEL_SIZE_MICRONS = "pixelSizeMicrons";
-    public static final String KEY_MESSAGE = "message";
+    // public static final String KEY_ORIGIN_MICRONS = "originMicrons"; // Removed in version 8.0.1
+    // public static final String KEY_PIXEL_SIZE_MICRONS = "pixelSizeMicrons"; // Removed in version 8.0.1
     public static final String KEY_DEPTH_CM = "depthCm";
     public static final String KEY_GAIN = "gain";
+    public static final String KEY_ERROR_MESSAGE = "errorMessage"; //!< Added in version 8.0.1
+    public static final String KEY_START_FRAME = "startFrame"; //!< Added in version 8.0.1
+    public static final String KEY_END_FRAME = "endFrame"; //!< Added in version 8.0.1
+    public static final String KEY_WRITABLE_URI = "writableUri"; //!< Added in version 8.0.1
+    public static final String KEY_PACKAGE_SIZE = "packageSize"; //!< Added in version 8.0.1
+    public static final String KEY_PACKAGE_EXTENSION = "packageExtension"; //!< Added in version 8.0.1
+    public static final String KEY_AVAILABLE = "available"; //!< Added in version 8.0.1
 
     // Predefined bundle values
 
@@ -271,7 +311,9 @@ public class MobileApi
 
     public static final String DEFAULT_COMPRESSION_TYPE = "jpeg";
     public static final int DEFAULT_COMPRESSION_QUALITY = 80;
+    public static final boolean DEFAULT_SEPARATE_OVERLAYS = false; // Added in version 8.0.1
     public static final double DEFAULT_USER_KEY_PARAM = 0;
+    public static final long DEFAULT_FRAME = 0; // Added in version 8.0.1
 
     // User functions
 
@@ -291,7 +333,9 @@ public class MobileApi
     public static final String USER_FN_MODE_CFI            = "color doppler";
     public static final String USER_FN_MODE_PDI            = "power doppler";
     public static final String USER_FN_MODE_PW             = "pw doppler";
+    public static final String USER_FN_MODE_NEEDLE         = "needle enhance";
     public static final String USER_FN_MODE_ELASTOGRAPHY   = "elastography";
+    public static final String USER_FN_MODE_RF             = "rf mode";
 
     //! User function to set the depth, to be used with messages MSG_USER_FN.
     //!

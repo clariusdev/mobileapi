@@ -11,7 +11,7 @@ It also supports sending user commands such as changing the imaging depth or tak
 - [Clarius App for Android](https://play.google.com/store/apps/details?id=me.clarius.clarius)
 - A valid Mobile API license (managed per scanner)
 
-Note: will not work with virtual scanners.
+Note: Virtual scanners are supported without a license since version 8.0.1.
 
 
 # Quickstart
@@ -24,7 +24,9 @@ Note: will not work with virtual scanners.
 
 4. In the Quickstart App, select Menu `⋮` > `connect` to start receiving images.
 
-|<img height="450px" alt="connection menu" src="images/quickstart_connect.png"/>|<img height="450px" alt="split screen imaging" src="images/quickstart_split_screen.png"/>|
+<img height="450px" alt="connection menu" src="images/quickstart_connect.png"/>
+
+<img height="450px" alt="split screen imaging" src="images/quickstart_split_screen.png"/>
 
 Usage:
 
@@ -86,13 +88,14 @@ All messages and their associated payload are described in the [MobileApi.java](
 # Licensing
 
 The service operates only when the Clarius App is connected to a scanner with the appropriate license.
+Contact Clarius for details: https://clarius.com/contact/
 
 However, the service accepts binding requests from clients even when no proper license is active to accommodate workflows where the license is removed for legitimate reasons, for example when a probe is disconnected to save battery.
 In this case, the service enters a restricted mode where it stops handling requests and sending updates, but will resume normal operation as soon as a licensed scanner is connected again.
 
 The license check workflow is as follows:
 
-1. The client binds to the Listen Service.
+1. The client binds to the service
 2. The service starts and accepts the bind request, regardless of the license status.
 3. Depending on the current license status:
     - if active, the service operates normally: all client requests are handled and all updates are sent to the clients;
@@ -100,3 +103,18 @@ The license check workflow is as follows:
 4. If the license status changes during operation, the service sends `MSG_LICENSE_UPDATE` and changes its mode of operation:
     - if the license becomes inactive: the service clears the image configuration and enter restricted mode;
     - if the license becomes active: the service resumes normal operations, but the client must re-send the image configuration.
+
+
+# Versions
+
+## 8.0.1
+
+* Support Virtual Scanner without license
+* Separate overlays: get overlays (like Doppler) in a separate image
+* More probe information: model, serial number, battery, temperature
+* Raw data
+
+
+# Known Issues
+
+* Binding to the Mobile API service fails to start the app.

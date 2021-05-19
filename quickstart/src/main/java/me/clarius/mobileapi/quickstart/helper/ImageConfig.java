@@ -6,7 +6,7 @@ import android.util.Size;
 import me.clarius.mobileapi.MobileApi;
 
 /**
- * Prepare the bundle data to add to MSG_IMAGE_SIZE messages to the service.
+ * Prepare the bundle data to add to MSG_CONFIGURE_IMAGE messages to the service.
  */
 
 public class ImageConfig {
@@ -40,7 +40,14 @@ public class ImageConfig {
         return this;
     }
     /**
-     * Get the bundle for MSG_IMAGE_SIZE.
+     * Set the flag for separating overlays.
+     */
+    public ImageConfig separateOverlays(boolean separate) {
+        mBundle.putBoolean(MobileApi.KEY_SEPARATE_OVERLAYS, separate);
+        return this;
+    }
+    /**
+     * Get the bundle for MSG_CONFIGURE_IMAGE.
      */
     public Bundle bundle() {
         return mBundle;
