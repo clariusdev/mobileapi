@@ -14,10 +14,12 @@
     <string name="desc_image">Where the ultrasound image will be displayed</string>
     <string name="menu_action_ask_scan_area">Ask scan area</string>
     <string name="menu_action_ask_probe_info">Ask probe info</string>
+    <string name="menu_action_ask_patient_info">Ask patient info</string>
     <string name="menu_action_ask_depth">Ask depth</string>
     <string name="menu_action_ask_gain">Ask gain</string>
     <string name="menu_user_fn">User Fn</string>
     <string name="menu_action_download_raw_data">Download raw data</string>
+    <string name="menu_action_start_clarius_app">Start Clarius</string>
     <string name="dialog_value_title">Value to send</string>
     <string name="dialog_value_confirm">Send</string>
     <string name="dialog_value_cancel">Cancel</string>

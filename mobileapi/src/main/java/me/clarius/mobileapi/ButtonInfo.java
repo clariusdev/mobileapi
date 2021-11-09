@@ -7,7 +7,6 @@ import android.os.Parcelable;
 
 public class ButtonInfo implements Parcelable
 {
-
     public static final int BUTTON_UP = 1;      //!< probe's up button identifier
     public static final int BUTTON_DOWN= 2;     //!< probe's bottom button identifier
 
@@ -25,7 +24,6 @@ public class ButtonInfo implements Parcelable
     }
 
     // Parcelable interface
-
     public static final Parcelable.Creator<ButtonInfo> CREATOR = new Parcelable.Creator<ButtonInfo>()
     {
         public ButtonInfo createFromParcel(Parcel in)

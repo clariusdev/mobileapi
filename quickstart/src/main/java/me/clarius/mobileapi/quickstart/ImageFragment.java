@@ -8,8 +8,8 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Rect;
-import android.net.Uri;
 import android.os.Bundle;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,9 +24,13 @@ import androidx.preference.PreferenceManager;
 
 import java.util.ArrayList;
 import java.lang.StringBuilder;
+import java.util.HashMap;
+import java.util.Map;
 
 import me.clarius.mobileapi.ButtonInfo;
+import me.clarius.mobileapi.PatientInfo;
 import me.clarius.mobileapi.PosInfo;
+import me.clarius.mobileapi.PowerInfo;
 import me.clarius.mobileapi.ProcessedImageInfo;
 import me.clarius.mobileapi.ProbeInfo;
 import me.clarius.mobileapi.quickstart.helper.ImageConfig;
@@ -35,7 +39,13 @@ import me.clarius.mobileapi.quickstart.helper.RawDataDownload;
 
 public class ImageFragment extends Fragment {
 
-    private static final String TAG = "ImageFragment";
+    private static final String TAG = "MobileApi/ImageFragment";
+
+    /** Clarius App package name, set in gradle.properties file. */
+    private static final String CLARIUS_PACKAGE_NAME = BuildConfig.CLARIUS_PACKAGE_NAME;
+
+    /** Clarius Mobile API Service name, set in gradle.properties file. */
+    private static final String CLARIUS_SERVICE_NAME = BuildConfig.CLARIUS_SERVICE_NAME;
 
     private MobileApiHelper mClarius = null;
     private ImageView mImageView = null;
@@ -50,7 +60,7 @@ public class ImageFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         mImageView = requireActivity().findViewById(R.id.imageView);
         if (null == mImageView) throw new AssertionError();
-        mClarius = new MobileApiHelper(requireContext());
+        mClarius = new MobileApiHelper(requireContext(), CLARIUS_PACKAGE_NAME, CLARIUS_SERVICE_NAME);
         mClarius.setObserver(mClariusObserver);
         getDefaultSharedPreferences().registerOnSharedPreferenceChangeListener(mPreferenceListener);
     }
@@ -64,6 +74,7 @@ public class ImageFragment extends Fragment {
         filter.addAction(Intents.ASK_PROBE_INFO);
         filter.addAction(Intents.ASK_DEPTH);
         filter.addAction(Intents.ASK_GAIN);
+        filter.addAction(Intents.ASK_PATIENT_INFO);
         filter.addAction(Intents.USER_FN);
         filter.addAction(Intents.DOWNLOAD_RAW_DATA);
         requireContext().registerReceiver(mReceiver, filter);
@@ -99,34 +110,55 @@ public class ImageFragment extends Fragment {
             .separateOverlays(p.getBoolean("image_separate_overlays", res.getBoolean(R.bool.default_separate_overlays)));
     }
 
+    private void sendImageConfig(SharedPreferences p) {
+        try {
+            mClarius.sendImageConfig(makeImageConfig(p));
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void sendPackageName() {
+        try {
+            mClarius.sendPackageName();
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+    }
+
     SharedPreferences.OnSharedPreferenceChangeListener mPreferenceListener = (sharedPreferences, key) -> {
         if (key.startsWith("image_")) {
-            mClarius.sendImageConfig(makeImageConfig(sharedPreferences));
+            sendImageConfig(sharedPreferences);
         }
     };
 
-    private MobileApiHelper.Observer mClariusObserver = new MobileApiHelper.Observer() {
+    private final MobileApiHelper.Observer mClariusObserver = new MobileApiHelper.Observer() {
         @Override
         public void onConnected(boolean connected) {
             String log = "Connected: " + connected;
+            Log.v(TAG, log);
             Toast.makeText(getContext(), log, Toast.LENGTH_SHORT).show();
             if (connected) {
-                mClarius.sendImageConfig(makeImageConfig(getDefaultSharedPreferences()));
+                sendImageConfig(getDefaultSharedPreferences());
+                sendPackageName();
             }
         }
         @Override
         public void onFrozen(boolean frozen) {
             String log = "Frozen: " + frozen;
+            Log.v(TAG, log);
             Toast.makeText(getContext(), log, Toast.LENGTH_SHORT).show();
         }
         @Override
         public void onDepthChanged(double cm) {
             String log = "Depth: " + cm + " cm";
+            Log.v(TAG, log);
             Toast.makeText(getContext(), log, Toast.LENGTH_SHORT).show();
         }
         @Override
         public void onGainChanged(double gain) {
             String log = "Gain: " + gain;
+            Log.v(TAG, log);
             Toast.makeText(getContext(), log, Toast.LENGTH_SHORT).show();
         }
         @Override
@@ -141,12 +173,14 @@ public class ImageFragment extends Fragment {
             }
             if (mImageInfo.update(imageInfo)) {
                 String log = "Image size: " + imageInfo.width + " x " + imageInfo.height;
+                Log.i(TAG, log);
                 Toast.makeText(getContext(), log, Toast.LENGTH_SHORT).show();
             }
         }
         @Override
         public void onButtonEvent(int buttonId, int clicks, int longPress) {
             String log = "Button: " + buttonName(buttonId) + " x" + clicks + " long? " + longPress;
+            Log.i(TAG, log);
             Toast.makeText(getContext(), log, Toast.LENGTH_SHORT).show();
         }
         String buttonName(int buttonId) {
@@ -169,9 +203,9 @@ public class ImageFragment extends Fragment {
                 return false;
             }
         }
-        ImageInfoWrapper mImageInfo = new ImageInfoWrapper();
+        final ImageInfoWrapper mImageInfo = new ImageInfoWrapper();
         @Override
-        public void onProbeInfoChanged(ProbeInfo probeInfo) {
+        public void onProbeInfoReceived(ProbeInfo probeInfo) {
             StringBuilder log = new StringBuilder();
             log.append("Probe info: ");
             if (null != probeInfo) {
@@ -180,6 +214,13 @@ public class ImageFragment extends Fragment {
                 log.append("not connected");
             }
             Log.i(TAG, log.toString());
+            Toast.makeText(getContext(), "Probe info received and logged in console", Toast.LENGTH_SHORT).show();
+        }
+        @Override
+        public void onPatientInfoReceived(PatientInfo patientInfo) {
+            String log = "Patient info: " + patientInfo.id + " - " + patientInfo.name;
+            Log.i(TAG, log);
+            Toast.makeText(getContext(), log, Toast.LENGTH_SHORT).show();
         }
         @Override
         public void onError(String msg) {
@@ -188,9 +229,10 @@ public class ImageFragment extends Fragment {
         @Override
         public void onLicenseChanged(boolean hasLicense) {
             String log = "3rd party app license changed: " + hasLicense;
+            Log.i(TAG, log);
             Toast.makeText(getContext(), log, Toast.LENGTH_SHORT).show();
             if (hasLicense) {
-                mClarius.sendImageConfig(makeImageConfig(getDefaultSharedPreferences()));
+                sendImageConfig(getDefaultSharedPreferences());
             }
         }
         @Override
@@ -199,47 +241,65 @@ public class ImageFragment extends Fragment {
             long packageSize = download.packageSize;
             String packageExtension = download.packageExtension;
             String log = "Raw data available? " + available + " size: " + packageSize + " extension: " + packageExtension;
+            Log.i(TAG, log);
             Toast.makeText(getContext(), log, Toast.LENGTH_SHORT).show();
             download.shareFile(getActivity());
         }
         @Override
         public void onRawDataDownloadProgress(int progress) {
         }
+        private Map<Integer, String> powerStrings() {
+            Map<Integer, String> strings = new HashMap<>();
+            strings.put(PowerInfo.POWER_OFF_IDLE, "Idle");
+            strings.put(PowerInfo.POWER_OFF_BATTERY, "Battery");
+            strings.put(PowerInfo.POWER_OFF_TEMPERATURE, "Temperature");
+            strings.put(PowerInfo.POWER_OFF_BUTTON, "Button");
+            return strings;
+        }
+        @Override
+        public void onPowerEvent(PowerInfo powerInfo) {
+            String log = "Power event: " + powerStrings().get(powerInfo.type);
+            Log.i(TAG, log);
+            Toast.makeText(getContext(), log, Toast.LENGTH_SHORT).show();
+        }
     };
 
+    interface IntentHandler {
+        void run(Intent intent) throws Exception;
+    }
+
     // Receive intents from MainActivity.
-    private BroadcastReceiver mReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            String action = intent.getAction();
-            if (Intents.CONNECT.equals(action)) {
-                mClarius.connect();
-            }
-            else if (Intents.DISCONNECT.equals(action)) {
-                mClarius.disconnect();
-            }
-            else if (Intents.ASK_SCAN_AREA.equals(action)) {
-                mClarius.askScanArea();
-            }
-            else if (Intents.ASK_PROBE_INFO.equals(action)) {
-                mClarius.askProbeInfo();
-            }
-            else if (Intents.ASK_DEPTH.equals(action)) {
-                mClarius.askDepth();
-            }
-            else if (Intents.ASK_GAIN.equals(action)) {
-                mClarius.askGain();
-            }
-            else if (Intents.DOWNLOAD_RAW_DATA.equals(action)) {
-                mClarius.downloadRawData();
-            }
-            else if (Intents.USER_FN.equals(action)) {
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        private final Map<String, IntentHandler> mIntentHandlers = makeIntentHandlers();
+        private Map<String, IntentHandler> makeIntentHandlers() {
+            HashMap<String, IntentHandler> ret = new HashMap<>();
+            ret.put(Intents.CONNECT, (intent) -> mClarius.connect());
+            ret.put(Intents.DISCONNECT, (intent) -> mClarius.disconnect());
+            ret.put(Intents.ASK_SCAN_AREA, (intent) -> mClarius.askScanArea());
+            ret.put(Intents.ASK_PROBE_INFO, (intent) -> mClarius.askProbeInfo());
+            ret.put(Intents.ASK_PATIENT_INFO, (intent) -> mClarius.askPatientInfo());
+            ret.put(Intents.ASK_DEPTH, (intent) -> mClarius.askDepth());
+            ret.put(Intents.ASK_GAIN, (intent) -> mClarius.askGain());
+            ret.put(Intents.DOWNLOAD_RAW_DATA, (intent) -> mClarius.downloadRawData());
+            ret.put(Intents.USER_FN, (intent) -> {
                 Bundle extras = intent.getExtras();
                 if (null != extras) {
                     mClarius.userFn(
-                            extras.getString(Intents.KEY_USER_FN),
-                            extras.getDouble(Intents.KEY_USER_PARAM, 0)
+                        extras.getString(Intents.KEY_USER_FN),
+                        extras.getDouble(Intents.KEY_USER_PARAM, 0)
                     );
+                }
+            });
+            return ret;
+        }
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            IntentHandler handler = mIntentHandlers.get(intent.getAction());
+            if (null != handler) {
+                try {
+                    handler.run(intent);
+                } catch (Throwable e) {
+                    e.printStackTrace();
                 }
             }
         }

@@ -103,18 +103,3 @@ The license check workflow is as follows:
 4. If the license status changes during operation, the service sends `MSG_LICENSE_UPDATE` and changes its mode of operation:
     - if the license becomes inactive: the service clears the image configuration and enter restricted mode;
     - if the license becomes active: the service resumes normal operations, but the client must re-send the image configuration.
-
-
-# Versions
-
-## 8.0.1
-
-* Support Virtual Scanner without license
-* Separate overlays: get overlays (like Doppler) in a separate image
-* More probe information: model, serial number, battery, temperature
-* Raw data
-
-
-# Known Issues
-
-* Binding to the Mobile API service fails to start the app.

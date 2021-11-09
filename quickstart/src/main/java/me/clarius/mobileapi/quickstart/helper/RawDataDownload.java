@@ -19,12 +19,12 @@ import java.lang.String;
 
 public class RawDataDownload {
 
-    private static final String TAG = "MobileApiRawData";
+    private static final String TAG = "MobileApi/RawData";
 
     private static final String RAW_DATA_DIR = "raw_data"; // from Manifest
     private static final String PROVIDER_NAME = "me.clarius.mobileapi.quickstart.fileprovider"; // from Manifest
 
-    private Context mContext;
+    private final Context mContext;
 
     public long startFrame;
     public long endFrame;
@@ -53,12 +53,13 @@ public class RawDataDownload {
     static RawDataDownload create(Context context, String packageName, long startFrame, long endFrame) throws IOException {
         File dir = new File(context.getFilesDir(), RAW_DATA_DIR);
         File newFile = new File(dir, uniqueFilename());
-        String fileName = newFile.getPath();
         if (!dir.exists()) {
-            dir.mkdirs();
+            if (!dir.mkdirs())
+                throw new IOException("Cannot create directory");
         }
         if (!newFile.exists()) {
-            newFile.createNewFile();
+            if (!newFile.createNewFile())
+                throw new IOException("Cannot create file");
         }
         Uri uri = FileProvider.getUriForFile(context, PROVIDER_NAME, newFile);
         context.grantUriPermission(packageName, uri,
@@ -69,7 +70,7 @@ public class RawDataDownload {
 
     void revokePermissions() {
         mContext.revokeUriPermission(writableUri,
-                Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+            Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION
         );
     }
 
@@ -78,7 +79,7 @@ public class RawDataDownload {
      *
      * At this point, URI permissions can be revoked.
      */
-    void onReceived(boolean available, long packageSize, String packageExtension) {
+    void onReceived(boolean available, long packageSize, String packageExtension) throws IOException {
         this.available = available;
         this.packageSize = packageSize;
         this.packageExtension = packageExtension;
@@ -89,7 +90,8 @@ public class RawDataDownload {
             File dir = new File(mContext.getFilesDir(), RAW_DATA_DIR);
             File from = new File(dir, writableUri.getLastPathSegment());
             File to = new File(dir, writableUri.getLastPathSegment() + packageExtension);
-            from.renameTo(to);
+            if (!from.renameTo(to))
+                throw new IOException("Cannot rename file");
             boolean exists = to.exists();
             Log.d(TAG, "Raw data file " + to + " exists? " + exists);
             writableUri = FileProvider.getUriForFile(mContext, PROVIDER_NAME, to);

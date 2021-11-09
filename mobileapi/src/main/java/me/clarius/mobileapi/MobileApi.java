@@ -3,14 +3,6 @@ package me.clarius.mobileapi;
 import java.lang.String;
 
 //! Specify the Clarius Mobile API Service protocol.
-//!
-//! Changes in version 8.0.1:
-//!
-//! - Renamed KEY_MESSAGE to KEY_ERROR_MESSAGE.
-//! - Added RF data messages MSG_DOWNLOAD_RAW_DATA and MSG_RETURN_RAW_DATA.
-//! - Added an option to obtain overlays in a separate image with KEY_SEPARATE_OVERLAYS.
-//! - Scan convert info is now transmitted with each image.
-//!     Removed MSG_GET_SCAN_CONVERT, MSG_SCAN_CONVERT_CHANGED, MSG_RETURN_SCAN_CONVERT, KEY_ORIGIN_MICRONS and KEY_PIXEL_SIZE_MICRONS.
 
 public class MobileApi
 {
@@ -89,8 +81,6 @@ public class MobileApi
 
     public static final int MSG_USER_FN = 6;
 
-    // public static final int MSG_GET_SCAN_CONVERT = 7; // Removed in version 8.0.1
-
     //! Query the service for the current depth.
     //!
     //! The reply will be delivered with message MSG_RETURN_DEPTH.
@@ -129,6 +119,46 @@ public class MobileApi
 
     public static final int MSG_DOWNLOAD_RAW_DATA = 10;
 
+    //! Query the service for the current patient info.
+    //!
+    //! The reply will be delivered with message MSG_RETURN_PATIENT_INFO.
+    //!
+    //! Parameter(s):
+    //! - Message.replyTo: client's Messenger where the reply should be sent. This field is mandatory; if missing, the query will be ignored.
+    //! - Message.arg1 (optional): callback parameter for MSG_RETURN_PATIENT_INFO.
+    //!
+    //! \version Added in version 8.3.0
+
+    public static final int MSG_GET_PATIENT_INFO = 11;
+
+    //! Command to the service to set the partner app package name.
+    //!
+    //! Parameter(s):
+    //! - Bundle[KEY_PACKAGE_NAME]: java.lang.string, the package name of the partner app, for example: "com.MyName.MyApp"
+    //! - Message.replyTo (optional): if set, Messenger to send the MSG_RETURN_STATUS message to.
+    //! - Message.arg1 (optional): callback parameter for MSG_RETURN_STATUS.
+    //!
+    //! Return: 0 = success, -1 = failure.
+    //!
+    //! Notes:
+    //! - Success indicates the command was successfully transmitted, but not necessarily successfully executed.
+    //! - To remove the app launching handling from the Clarius App, send the empty string, "", not null.
+    //!
+    //! \version Added in version 8.5.0
+
+    public static final int MSG_3P_PACKAGE = 12;
+
+    //! Send patient info to the Clarius App.
+    //!
+    //! Parameter(s):
+    //! - Bundle[KEY_PATIENT_INFO]: me.clarius.mobileapi.PatientInfo, patient info to set
+    //! - Message.replyTo (optional): if set, Messenger to send the MSG_RETURN_STATUS message to.
+    //! - Message.arg1 (optional): callback parameter for MSG_RETURN_STATUS.
+    //!
+    //! \version Added in version 8.6.0
+
+    public static final int MSG_SET_PATIENT_INFO = 14;
+
     // Messages from server to client.
 
     //! Return the outcome of a command sent by the client.
@@ -141,10 +171,10 @@ public class MobileApi
 
     public static final int MSG_RETURN_STATUS = 101;
 
-    //! Message to the client to notify the freeze state changed.
+    //! Message to the client to notify freeze state changed
     //!
     //! Parameters:
-    //! - Message.arg1: 1 = frozen, 0 = imaging.
+    //! - Bundle[KEY_FREEZE]: boolean, freeze state
 
     public static final int MSG_FREEZE_CHANGED = 102;
 
@@ -197,15 +227,12 @@ public class MobileApi
 
     //! Message to the client when the 3rd party app license has been revoked.
     //!
-    //! This occurse when selecting a non-licensed scanner.
-    //! The service stops and does not resume, even if selecting a licensed scanner, the service must be restarted.
+    //! This occurs when selecting a non-licensed probe.
+    //! The service stops and does not resume, even if selecting a licensed probe, the service must be restarted.
 
     public static final int MSG_NO_LICENSE = 108;
 
-    // public static final int MSG_SCAN_CONVERT_CHANGED = 109; // Removed in version 8.0.1
-    // public static final int MSG_RETURN_SCAN_CONVERT = 110; // Removed in version 8.0.1
-
-    //! Message to the client when an internal error occured.
+    //! Message to the client when an internal error occurred.
     //!
     //! Parameters:
     //! - Bundle[KEY_ERROR_MESSAGE]: java.lang.String, the error message in English.
@@ -276,31 +303,57 @@ public class MobileApi
 
     public static final int MSG_RAW_DATA_DOWNLOAD_PROGRESS = 118;
 
+    //! Message to the client on power event.
+    //!
+    //! Parameters:
+    //! - Bundle[KEY_POWER_INFO]: me.clarius.mobileapi.PowerInfo, the power event info.
+    //!
+    //! Note: only power events associated with the probe initiating shut down will be sent
+    //! For example, if the probe's battery gets too low, or the probe's button is used to shut down,
+    //! the event will be sent, but if the user powers the probe down from Clarius App,
+    //! the message is not implemented.
+    //!
+    //! \version Added in version 8.3.0
+
+    public static final int MSG_POWER_EVENT = 119;
+
+    //! Reply to queries MSG_GET_PATIENT_INFO.
+    //!
+    //! Parameters:
+    //! - Bundle[KEY_PATIENT_INFO]: me.clarius.mobileapi.PatientInfo, the current patient info. Can be null if no probe is connected.
+    //! - Message.arg1: callback parameter copied from the Message.arg1 sent by the client.
+    //!
+    //! \version Added in version 8.3.0
+
+    public static final int MSG_RETURN_PATIENT_INFO = 120;
+
     // Bundle keys
 
     public static final String KEY_IMAGE_SIZE = "size";
     public static final String KEY_COMPRESSION_TYPE = "compressionType";
     public static final String KEY_COMPRESSION_QUALITY = "compressionQuality";
-    public static final String KEY_SEPARATE_OVERLAYS = "separateOverlays"; //!< Added in version 8.0.1
+    public static final String KEY_SEPARATE_OVERLAYS = "separateOverlays";
     public static final String KEY_IMAGE_DATA = "data";
     public static final String KEY_IMAGE_INFO = "info";
     public static final String KEY_POS_INFO = "pos";
     public static final String KEY_BUTTON_INFO = "info";
+    public static final String KEY_POWER_INFO = "info";
     public static final String KEY_B_IMAGE_AREA = "bImageArea";
     public static final String KEY_PROBE_INFO = "probeInfo";
+    public static final String KEY_PATIENT_INFO = "patientInfo";
     public static final String KEY_USER_FN = "userFn";
     public static final String KEY_USER_PARAM = "userParam";
-    // public static final String KEY_ORIGIN_MICRONS = "originMicrons"; // Removed in version 8.0.1
-    // public static final String KEY_PIXEL_SIZE_MICRONS = "pixelSizeMicrons"; // Removed in version 8.0.1
+    public static final String KEY_PACKAGE_NAME = "packageName";
+    public static final String KEY_FREEZE = "freeze";
     public static final String KEY_DEPTH_CM = "depthCm";
     public static final String KEY_GAIN = "gain";
-    public static final String KEY_ERROR_MESSAGE = "errorMessage"; //!< Added in version 8.0.1
-    public static final String KEY_START_FRAME = "startFrame"; //!< Added in version 8.0.1
-    public static final String KEY_END_FRAME = "endFrame"; //!< Added in version 8.0.1
-    public static final String KEY_WRITABLE_URI = "writableUri"; //!< Added in version 8.0.1
-    public static final String KEY_PACKAGE_SIZE = "packageSize"; //!< Added in version 8.0.1
-    public static final String KEY_PACKAGE_EXTENSION = "packageExtension"; //!< Added in version 8.0.1
-    public static final String KEY_AVAILABLE = "available"; //!< Added in version 8.0.1
+    public static final String KEY_ERROR_MESSAGE = "errorMessage";
+    public static final String KEY_START_FRAME = "startFrame";
+    public static final String KEY_END_FRAME = "endFrame";
+    public static final String KEY_WRITABLE_URI = "writableUri";
+    public static final String KEY_PACKAGE_SIZE = "packageSize";
+    public static final String KEY_PACKAGE_EXTENSION = "packageExtension";
+    public static final String KEY_AVAILABLE = "available";
 
     // Predefined bundle values
 
@@ -311,9 +364,9 @@ public class MobileApi
 
     public static final String DEFAULT_COMPRESSION_TYPE = "jpeg";
     public static final int DEFAULT_COMPRESSION_QUALITY = 80;
-    public static final boolean DEFAULT_SEPARATE_OVERLAYS = false; // Added in version 8.0.1
+    public static final boolean DEFAULT_SEPARATE_OVERLAYS = false;
     public static final double DEFAULT_USER_KEY_PARAM = 0;
-    public static final long DEFAULT_FRAME = 0; // Added in version 8.0.1
+    public static final long DEFAULT_FRAME = 0;
 
     // User functions
 

@@ -1,9 +1,6 @@
 package me.clarius.mobileapi.quickstart;
 
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.ServiceInfo;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AlertDialog;
@@ -14,12 +11,14 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.EditText;
+import android.widget.Toast;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class MainActivity extends AppCompatActivity {
 
-    private static final String TAG = "Main";
+    private static final String TAG = "MobileApi/Main";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,30 +29,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        Log.d(TAG, "Listing installed Clarius packages.\n" +
-            "Note: by default, the Quick Start app connects to the Clarius App version from the Play Store.\n" +
-            "To connect to another version listed below, change the variable `clariusPackageName` in file `gradle.properties`.");
-        List<PackageInfo> packages = getPackageManager().getInstalledPackages(PackageManager.GET_SERVICES);
-        if (packages.isEmpty()) {
-            Log.e(TAG, "No package found.");
-        }
-        else {
-            int nfound = 0;
-            for (PackageInfo p : packages) {
-                if (p.packageName.toLowerCase().contains("clarius")) {
-                    ++nfound;
-                    String log = "Package '" + p.packageName + "' with service(s):";
-                    if ((p.services != null) && (p.services.length > 0)) {
-                        for (ServiceInfo s : p.services) { log += " " + s.name + ","; }
-                    }
-                    else {
-                        log += " " + "no service";
-                    }
-                    Log.d(TAG, log);
-                }
-            }
-            Log.d(TAG, "Found " + nfound + " Clarius packages.");
-        }
+        ClariusPackages.print(this);
     }
 
     @Override
@@ -68,31 +44,10 @@ public class MainActivity extends AppCompatActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        switch (item.getItemId()) {
-            case R.id.action_connect:
-                sendBroadcast(new Intent(Intents.CONNECT));
-                return true;
-            case R.id.action_disconnect:
-                sendBroadcast(new Intent(Intents.DISCONNECT));
-                return true;
-            case R.id.action_ask_scan_area:
-                sendBroadcast(new Intent(Intents.ASK_SCAN_AREA));
-                return true;
-            case R.id.action_ask_probe_info:
-                sendBroadcast(new Intent(Intents.ASK_PROBE_INFO));
-                return true;
-            case R.id.action_ask_depth:
-                sendBroadcast(new Intent(Intents.ASK_DEPTH));
-                return true;
-            case R.id.action_ask_gain:
-                sendBroadcast(new Intent(Intents.ASK_GAIN));
-                return true;
-            case R.id.action_download_raw_data:
-                sendBroadcast(new Intent(Intents.DOWNLOAD_RAW_DATA));
-                return true;
-            case R.id.action_settings:
-                startActivity(new Intent(this, SettingsActivity.class));
-                return true;
+        MenuHandler handler = mMenuHandlers.get(item.getItemId());
+        if (null != handler) {
+            handler.run();
+            return true;
         }
         if (item.getGroupId() == R.id.group_user_fn) {
             sendBroadcast(new Intent(Intents.USER_FN).putExtra(Intents.KEY_USER_FN, item.getTitle()));
@@ -113,5 +68,40 @@ public class MainActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    interface MenuHandler {
+        void run();
+    }
+
+    private Map<Integer, MenuHandler> makeMenuHandlers() {
+        HashMap<Integer, MenuHandler> ret = new HashMap<>();
+        ret.put(R.id.action_connect, () -> sendBroadcast(new Intent(Intents.CONNECT)));
+        ret.put(R.id.action_disconnect, () -> sendBroadcast(new Intent(Intents.DISCONNECT)));
+        ret.put(R.id.action_ask_scan_area, () -> sendBroadcast(new Intent(Intents.ASK_SCAN_AREA)));
+        ret.put(R.id.action_ask_probe_info, () -> sendBroadcast(new Intent(Intents.ASK_PROBE_INFO)));
+        ret.put(R.id.action_ask_depth, () -> sendBroadcast(new Intent(Intents.ASK_DEPTH)));
+        ret.put(R.id.action_ask_gain, () -> sendBroadcast(new Intent(Intents.ASK_GAIN)));
+        ret.put(R.id.action_ask_patient_info, () -> sendBroadcast(new Intent(Intents.ASK_PATIENT_INFO)));
+        ret.put(R.id.action_download_raw_data, () -> sendBroadcast(new Intent(Intents.DOWNLOAD_RAW_DATA)));
+        ret.put(R.id.action_settings, () -> startActivity(new Intent(this, SettingsActivity.class)));
+        ret.put(R.id.action_start_clarius_app, this::startClariusApp);
+        return ret;
+    }
+
+    private final Map<Integer, MenuHandler> mMenuHandlers = makeMenuHandlers();
+
+    private void startClariusApp() {
+        Log.i(TAG, "Starting Clarius App...");
+        Intent intent = getPackageManager().getLaunchIntentForPackage(BuildConfig.CLARIUS_PACKAGE_NAME);
+        if (null == intent) {
+            Toast.makeText(this, "Could not find the Clarius App package, verify it is installed.", Toast.LENGTH_SHORT).show();
+        }
+        else {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            intent.addFlags(Intent.FLAG_ACTIVITY_MULTIPLE_TASK);
+            intent.addFlags(Intent.FLAG_ACTIVITY_LAUNCH_ADJACENT);
+            startActivity(intent);
+        }
     }
 }

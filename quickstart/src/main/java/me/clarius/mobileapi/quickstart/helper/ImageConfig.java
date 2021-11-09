@@ -10,7 +10,7 @@ import me.clarius.mobileapi.MobileApi;
  */
 
 public class ImageConfig {
-    private Bundle mBundle;
+    private final Bundle mBundle;
     /**
      * Construct the bundle with the required image dimensions.
      */
