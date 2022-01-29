@@ -80,6 +80,7 @@ public class MainActivity extends AppCompatActivity {
         ret.put(R.id.action_disconnect, () -> sendBroadcast(new Intent(Intents.DISCONNECT)));
         ret.put(R.id.action_ask_scan_area, () -> sendBroadcast(new Intent(Intents.ASK_SCAN_AREA)));
         ret.put(R.id.action_ask_probe_info, () -> sendBroadcast(new Intent(Intents.ASK_PROBE_INFO)));
+        ret.put(R.id.action_ask_freeze, () -> sendBroadcast(new Intent(Intents.ASK_FREEZE)));
         ret.put(R.id.action_ask_depth, () -> sendBroadcast(new Intent(Intents.ASK_DEPTH)));
         ret.put(R.id.action_ask_gain, () -> sendBroadcast(new Intent(Intents.ASK_GAIN)));
         ret.put(R.id.action_ask_patient_info, () -> sendBroadcast(new Intent(Intents.ASK_PATIENT_INFO)));

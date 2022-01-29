@@ -127,7 +127,7 @@ public class MobileApi
     //! - Message.replyTo: client's Messenger where the reply should be sent. This field is mandatory; if missing, the query will be ignored.
     //! - Message.arg1 (optional): callback parameter for MSG_RETURN_PATIENT_INFO.
     //!
-    //! \version Added in version 8.3.0
+    //! \version Added in version 8.6.0
 
     public static final int MSG_GET_PATIENT_INFO = 11;
 
@@ -144,9 +144,21 @@ public class MobileApi
     //! - Success indicates the command was successfully transmitted, but not necessarily successfully executed.
     //! - To remove the app launching handling from the Clarius App, send the empty string, "", not null.
     //!
-    //! \version Added in version 8.5.0
+    //! \version Added in version 8.6.0
 
     public static final int MSG_3P_PACKAGE = 12;
+
+    //! Query the service for the current freeze state.
+    //!
+    //! The reply will be delivered with message MSG_RETURN_FREEZE.
+    //!
+    //! Parameter(s):
+    //! - Message.replyTo: client's Messenger where the reply should be sent. This field is mandatory; if missing, the query will be ignored.
+    //! - Message.arg1 (optional): callback parameter for MSG_RETURN_FREEZE
+    //!
+    //! \version Added in version 9.0.0
+
+    public static final int MSG_GET_FREEZE = 13;
 
     //! Send patient info to the Clarius App.
     //!
@@ -158,6 +170,28 @@ public class MobileApi
     //! \version Added in version 8.6.0
 
     public static final int MSG_SET_PATIENT_INFO = 14;
+
+    //! Send settings info to the Clarius App.
+    //!
+    //! Parameter(s):
+    //! - Bundle[KEY_SETTINGS_INFO]: me.clarius.mobileapi.SettingsInfo, settings info to set
+    //! - Message.replyTo (optional): if set, Messenger to send the MSG_RETURN_STATUS message to.
+    //! - Message.arg1 (optional): callback parameter for MSG_RETURN_STATUS.
+    //!
+    //! \version Added in version 9.0.0
+
+    public static final int MSG_SET_SETTINGS_INFO = 15;
+
+    //! Send complete exam message to the Clarius App.
+    //!
+    //! Parameter(s):
+    //! - Bundle[KEY_COMPLETE_EXAM]: complete exam enumeration (see COMPLETE_EXAM_XXX_
+    //! - Message.replyTo (optional): if set, Messenger to send the MSG_RETURN_STATUS message to.
+    //! - Message.arg1 (optional): callback parameter for MSG_RETURN_STATUS.
+    //!
+    //! \version Added in version 9.0.0
+
+    public static final int MSG_COMPLETE_EXAM = 16;
 
     // Messages from server to client.
 
@@ -313,7 +347,7 @@ public class MobileApi
     //! the event will be sent, but if the user powers the probe down from Clarius App,
     //! the message is not implemented.
     //!
-    //! \version Added in version 8.3.0
+    //! \version Added in version 8.6.0
 
     public static final int MSG_POWER_EVENT = 119;
 
@@ -323,9 +357,19 @@ public class MobileApi
     //! - Bundle[KEY_PATIENT_INFO]: me.clarius.mobileapi.PatientInfo, the current patient info. Can be null if no probe is connected.
     //! - Message.arg1: callback parameter copied from the Message.arg1 sent by the client.
     //!
-    //! \version Added in version 8.3.0
+    //! \version Added in version 8.6.0
 
     public static final int MSG_RETURN_PATIENT_INFO = 120;
+
+    //! Reply to queries MSG_GET_FREEZE.
+    //!
+    //! Parameters:
+    //! - Bundle[KEY_FREEZE]: boolean, freeze state
+    //! - Message.arg1: callback parameter copied from the Message.arg1 sent by the client.
+    //!
+    //! \version Added in version 9.0.0
+
+    public static final int MSG_RETURN_FREEZE = 121;
 
     // Bundle keys
 
@@ -341,6 +385,8 @@ public class MobileApi
     public static final String KEY_B_IMAGE_AREA = "bImageArea";
     public static final String KEY_PROBE_INFO = "probeInfo";
     public static final String KEY_PATIENT_INFO = "patientInfo";
+    public static final String KEY_SETTINGS_INFO = "settingsInfo";
+    public static final String KEY_COMPLETE_EXAM = "completeExam";
     public static final String KEY_USER_FN = "userFn";
     public static final String KEY_USER_PARAM = "userParam";
     public static final String KEY_PACKAGE_NAME = "packageName";
@@ -367,6 +413,11 @@ public class MobileApi
     public static final boolean DEFAULT_SEPARATE_OVERLAYS = false;
     public static final double DEFAULT_USER_KEY_PARAM = 0;
     public static final long DEFAULT_FRAME = 0;
+
+    // Complete exam options
+    public static final int COMPLETE_EXAM_FINISH = 0;   //! completes exam by storing all captured data
+    public static final int COMPLETE_EXAM_DISCARD = 1;  //! completes exam by discarding any captured data
+    public static final int COMPLETE_EXAM_SHELVE = 2;   //! shelves exam for later use
 
     // User functions
 

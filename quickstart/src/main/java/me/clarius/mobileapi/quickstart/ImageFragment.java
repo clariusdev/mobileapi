@@ -72,6 +72,7 @@ public class ImageFragment extends Fragment {
         filter.addAction(Intents.DISCONNECT);
         filter.addAction(Intents.ASK_SCAN_AREA);
         filter.addAction(Intents.ASK_PROBE_INFO);
+        filter.addAction(Intents.ASK_FREEZE);
         filter.addAction(Intents.ASK_DEPTH);
         filter.addAction(Intents.ASK_GAIN);
         filter.addAction(Intents.ASK_PATIENT_INFO);
@@ -278,6 +279,7 @@ public class ImageFragment extends Fragment {
             ret.put(Intents.ASK_SCAN_AREA, (intent) -> mClarius.askScanArea());
             ret.put(Intents.ASK_PROBE_INFO, (intent) -> mClarius.askProbeInfo());
             ret.put(Intents.ASK_PATIENT_INFO, (intent) -> mClarius.askPatientInfo());
+            ret.put(Intents.ASK_FREEZE, (intent) -> mClarius.askFreeze());
             ret.put(Intents.ASK_DEPTH, (intent) -> mClarius.askDepth());
             ret.put(Intents.ASK_GAIN, (intent) -> mClarius.askGain());
             ret.put(Intents.DOWNLOAD_RAW_DATA, (intent) -> mClarius.downloadRawData());

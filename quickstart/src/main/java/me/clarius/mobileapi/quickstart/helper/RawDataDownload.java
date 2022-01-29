@@ -84,7 +84,7 @@ public class RawDataDownload {
         this.packageSize = packageSize;
         this.packageExtension = packageExtension;
         // rename file and update uri
-        if (!packageExtension.isEmpty())
+        if (packageExtension && !packageExtension.isEmpty())
         {
             // there is probably a better way to rename the file but I didn't figure it out
             File dir = new File(mContext.getFilesDir(), RAW_DATA_DIR);

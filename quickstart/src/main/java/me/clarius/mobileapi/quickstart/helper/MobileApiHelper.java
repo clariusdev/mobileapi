@@ -225,6 +225,17 @@ public class MobileApiHelper {
         mService.send(msg);
     }
 
+    /** Ask the service to give us the current freeze state. Does nothing if not bound. */
+    public void askFreeze() throws RemoteException {
+        if (!mBound)
+            return;
+        Log.v(TAG, "Asking freeze state");
+        Message msg = Message.obtain(null, MobileApi.MSG_GET_FREEZE);
+        msg.replyTo = mMessenger;
+        setCallbackParam(msg, MobileApi.MSG_GET_FREEZE);
+        mService.send(msg);
+    }
+
     /** Ask the service to give us the current imaging depth. Does nothing if not bound. */
     public void askDepth() throws RemoteException {
         if (!mBound)
@@ -421,6 +432,13 @@ public class MobileApiHelper {
             }
             if (MobileApi.MSG_NO_LICENSE == msg.what) {
                 logAndReportError("No license");
+                return true;
+            }
+            if (MobileApi.MSG_RETURN_FREEZE == msg.what) {
+                Log.v(TAG, "MSG_RETURN_FREEZE returned with callback param: " + getCallbackParam(msg));
+                if (null != mObserver) {
+                    mObserver.onFrozen(msg.getData().getBoolean(MobileApi.KEY_FREEZE));
+                }
                 return true;
             }
             if (MobileApi.MSG_RETURN_DEPTH == msg.what) {

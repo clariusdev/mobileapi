@@ -48,6 +48,11 @@
         android:title="@string/menu_action_ask_gain"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_ask_freeze"
+        android:orderInCategory="100"
+        android:title="@string/menu_action_ask_freeze"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_start_clarius_app"
         android:title="@string/menu_action_start_clarius_app"
         app:showAsAction="ifRoom" />
