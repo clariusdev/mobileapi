@@ -3,7 +3,10 @@ Changelog
 
 # 9.0.0
 
-- No changes, including APK file
+Added:
+- `MSG_GET_FREEZE`: query freeze state without having to get notified.
+- `MSG_SET_SETTINGS_INFO`: set probe settings through the api
+- `MSG_COMPLETE_EXAM`: complete exam via store, discard, or shelve
 
 # 8.6.0
 
