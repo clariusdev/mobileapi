@@ -178,8 +178,8 @@ public class ImageFragment extends Fragment {
             }
         }
         @Override
-        public void onButtonEvent(int buttonId, int clicks, int longPress) {
-            String log = "Button: " + buttonName(buttonId) + " x" + clicks + " long? " + longPress;
+        public void onButtonEvent(ButtonInfo info) {
+            String log = "Button: " + buttonName(info.id) + " x" + info.clicks + " long? " + info.longPress;
             Log.i(TAG, log);
             Toast.makeText(getContext(), log, Toast.LENGTH_SHORT).show();
         }

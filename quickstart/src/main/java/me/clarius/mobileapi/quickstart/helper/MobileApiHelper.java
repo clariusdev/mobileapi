@@ -20,7 +20,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 import me.clarius.mobileapi.ButtonInfo;
 import me.clarius.mobileapi.MobileApi;
@@ -39,13 +39,13 @@ import me.clarius.mobileapi.ProcessedImageInfo;
  * - send messages to the service.
  *
  * Also demonstrates callback parameters, used to map outbound messages to return status messages from the service.
+ * Here, a callback parameter is used to detect the reply to our MSG_REGISTER_CLIENT requests:
  *
- * How it works:
- *  1. When sending a message, set Message.arg1 to a unique value.
- *      Here, it is simply set to the message code;
+ *  1. When sending MSG_REGISTER_CLIENT, set Message.arg1 to a unique value.
+ *      Here, it is simply set to the message code MSG_REGISTER_CLIENT.
  *  2. Wait for a MSG_RETURN_STATUS from the service and check its Message.arg1 field:
  *      a. if it matches, it is the return status for our request;
- *      b. otherwise, it is the return status for another request;
+ *      b. otherwise, it is the return status for another request.
  *  3. Use different codes to differentiate requests.
  */
 
@@ -89,7 +89,7 @@ public class MobileApiHelper {
         void onDepthChanged(double cm);
         void onGainChanged(double gain);
         void onNewProcessedImage(Bitmap imageData, ProcessedImageInfo imageInfo, ArrayList<PosInfo> posInfo);
-        void onButtonEvent(int buttonId, int clicks, int longPress);
+        void onButtonEvent(ButtonInfo info);
         void onScanAreaChanged(Rect rect);
         void onProbeInfoReceived(ProbeInfo probeInfo);
         void onPatientInfoReceived(PatientInfo patientInfo);
@@ -102,7 +102,8 @@ public class MobileApiHelper {
     /** Helper to report errors. */
     private void logAndReportError(String message) {
         Log.e(TAG, message);
-        if (null != mObserver) mObserver.onError(message);
+        if (null != mObserver)
+            mObserver.onError(message);
     }
 
     /**
@@ -144,15 +145,13 @@ public class MobileApiHelper {
     public void disconnect() {
         if (!mBound)
             return;
-        if (mRegistered) {
+        if (mRegistered)
             unregisterMessenger();
-        }
         Log.v(TAG, "Disconnecting from Clarius service");
         mContext.unbindService(mConnection);
         mBound = false;
-        if (null != mObserver) {
+        if (null != mObserver)
             mObserver.onConnected(false);
-        }
     }
 
     /**
@@ -172,7 +171,6 @@ public class MobileApiHelper {
         Message msg = Message.obtain(null, MobileApi.MSG_CONFIGURE_IMAGE);
         msg.replyTo = mMessenger;
         msg.setData(config.bundle());
-        setCallbackParam(msg, MobileApi.MSG_CONFIGURE_IMAGE);
         mService.send(msg);
     }
 
@@ -189,7 +187,6 @@ public class MobileApiHelper {
         Bundle data = new Bundle();
         data.putString(MobileApi.KEY_PACKAGE_NAME, packageName);
         msg.setData(data);
-        setCallbackParam(msg, MobileApi.MSG_3P_PACKAGE);
         mService.send(msg);
     }
 
@@ -200,7 +197,6 @@ public class MobileApiHelper {
         Log.v(TAG, "Asking scan area");
         Message msg = Message.obtain(null, MobileApi.MSG_GET_SCAN_AREA);
         msg.replyTo = mMessenger;
-        setCallbackParam(msg, MobileApi.MSG_GET_SCAN_AREA);
         mService.send(msg);
     }
 
@@ -211,7 +207,6 @@ public class MobileApiHelper {
         Log.v(TAG, "Asking probe info");
         Message msg = Message.obtain(null, MobileApi.MSG_GET_PROBE_INFO);
         msg.replyTo = mMessenger;
-        setCallbackParam(msg, MobileApi.MSG_GET_PROBE_INFO);
         mService.send(msg);
     }
 
@@ -222,7 +217,6 @@ public class MobileApiHelper {
         Log.v(TAG, "Asking patient info");
         Message msg = Message.obtain(null, MobileApi.MSG_GET_PATIENT_INFO);
         msg.replyTo = mMessenger;
-        setCallbackParam(msg, MobileApi.MSG_GET_PATIENT_INFO);
         mService.send(msg);
     }
 
@@ -233,7 +227,6 @@ public class MobileApiHelper {
         Log.v(TAG, "Asking freeze state");
         Message msg = Message.obtain(null, MobileApi.MSG_GET_FREEZE);
         msg.replyTo = mMessenger;
-        setCallbackParam(msg, MobileApi.MSG_GET_FREEZE);
         mService.send(msg);
     }
 
@@ -244,7 +237,6 @@ public class MobileApiHelper {
         Log.v(TAG, "Asking imaging depth");
         Message msg = Message.obtain(null, MobileApi.MSG_GET_DEPTH);
         msg.replyTo = mMessenger;
-        setCallbackParam(msg, MobileApi.MSG_GET_DEPTH);
         mService.send(msg);
     }
 
@@ -255,7 +247,6 @@ public class MobileApiHelper {
         Log.v(TAG, "Asking imaging gain");
         Message msg = Message.obtain(null, MobileApi.MSG_GET_GAIN);
         msg.replyTo = mMessenger;
-        setCallbackParam(msg, MobileApi.MSG_GET_GAIN);
         mService.send(msg);
     }
 
@@ -274,7 +265,6 @@ public class MobileApiHelper {
         data.putString(MobileApi.KEY_USER_FN, fn);
         data.putDouble(MobileApi.KEY_USER_PARAM, param);
         msg.setData(data);
-        setCallbackParam(msg, MobileApi.MSG_USER_FN);
         mService.send(msg);
     }
 
@@ -302,7 +292,8 @@ public class MobileApiHelper {
             // interact with the service. We are communicating with the
             // service using a messenger, so here we get a client-side
             // representation of that from the raw IBinder object.
-            if (service == null) throw new AssertionError("Received null service");
+            if (service == null)
+                throw new AssertionError("Received null service");
             Log.v(TAG, "Service connected");
             mService = new Messenger(service);
             mBound = true;
@@ -325,145 +316,102 @@ public class MobileApiHelper {
         }
     };
 
+    /** Helper to convert a parcelable from a Bundle and send it to the observer. */
+    private <T> void emit(BiConsumer<Observer, T> fn, Message msg, Class<T> klass, String field) {
+        if (null != mObserver) {
+            Bundle data = msg.getData();
+            if (null != klass)
+                data.setClassLoader(klass.getClassLoader());
+            T info = data.getParcelable(field);
+            if (null == info)
+                throw new AssertionError("Field missing '" + field + "'");
+            fn.accept(mObserver, info);
+        }
+    }
+
+    interface MessageHandler {
+        void run(Message msg) throws Exception;
+    }
+
+    private Map<Integer, MessageHandler> makeMessageHandlers() {
+        HashMap<Integer, MessageHandler> ret = new HashMap<>();
+        ret.put(MobileApi.MSG_FREEZE_CHANGED, (Message msg) -> {
+            if (null != mObserver) mObserver.onFrozen(msg.getData().getBoolean(MobileApi.KEY_FREEZE));
+        });
+        ret.put(MobileApi.MSG_DEPTH_CHANGED, (Message msg) -> {
+            if (null != mObserver) mObserver.onDepthChanged(msg.getData().getDouble(MobileApi.KEY_DEPTH_CM));
+        });
+        ret.put(MobileApi.MSG_GAIN_CHANGED, (Message msg) -> {
+            if (null != mObserver) mObserver.onGainChanged(msg.getData().getDouble(MobileApi.KEY_GAIN));
+        });
+        ret.put(MobileApi.MSG_RETURN_STATUS, (Message msg) -> {
+            int param = getCallbackParam(msg);
+            int status = getReturnStatus(msg);
+            Log.v(TAG, "Return status: " + status + ", param: " + param);
+            if (null != mObserver && MobileApi.MSG_REGISTER_CLIENT == param) {
+                mObserver.onConnected(0 == status);
+            }
+        });
+        ret.put(MobileApi.MSG_NEW_PROCESSED_IMAGE, this::onImageUpdated);
+        ret.put(MobileApi.MSG_BUTTON_EVENT, (Message msg) -> {
+            emit(Observer::onButtonEvent, msg, ButtonInfo.class, MobileApi.KEY_BUTTON_INFO);
+        });
+        ret.put(MobileApi.MSG_SCAN_AREA_CHANGED, (Message msg) -> {
+            emit(Observer::onScanAreaChanged, msg, null, MobileApi.KEY_B_IMAGE_AREA);
+        });
+        ret.put(MobileApi.MSG_RETURN_SCAN_AREA, (Message msg) -> {
+            emit(Observer::onScanAreaChanged, msg, null, MobileApi.KEY_B_IMAGE_AREA);
+        });
+        ret.put(MobileApi.MSG_RETURN_PROBE_INFO, (Message msg) -> {
+            emit(Observer::onProbeInfoReceived, msg, ProbeInfo.class, MobileApi.KEY_PROBE_INFO);
+        });
+        ret.put(MobileApi.MSG_RETURN_PATIENT_INFO, (Message msg) -> {
+            emit(Observer::onPatientInfoReceived, msg, PatientInfo.class, MobileApi.KEY_PATIENT_INFO);
+        });
+        ret.put(MobileApi.MSG_NO_LICENSE, (Message msg) -> {
+            logAndReportError("No license");
+        });
+        ret.put(MobileApi.MSG_RETURN_FREEZE, (Message msg) -> {
+            if (null != mObserver) mObserver.onFrozen(msg.getData().getBoolean(MobileApi.KEY_FREEZE));
+        });
+        ret.put(MobileApi.MSG_RETURN_DEPTH, (Message msg) -> {
+            if (null != mObserver) mObserver.onDepthChanged(msg.getData().getDouble(MobileApi.KEY_DEPTH_CM));
+        });
+        ret.put(MobileApi.MSG_RETURN_GAIN, (Message msg) -> {
+            if (null != mObserver) mObserver.onGainChanged(msg.getData().getDouble(MobileApi.KEY_GAIN));
+        });
+        ret.put(MobileApi.MSG_ERROR, (Message msg) -> {
+            String error = msg.getData().getString(MobileApi.KEY_ERROR_MESSAGE, "<unknown>");
+            logAndReportError("Service error: " + error);
+        });
+        ret.put(MobileApi.MSG_LICENSE_CHANGED, (Message msg) -> {
+            if (null != mObserver) mObserver.onLicenseChanged(msg.arg1 == 1);
+        });
+        ret.put(MobileApi.MSG_RAW_DATA_AVAILABLE, this::onRawDataAvailable);
+        ret.put(MobileApi.MSG_RAW_DATA_COPIED, this::onRawDataCopied);
+        ret.put(MobileApi.MSG_POWER_EVENT, (Message msg) -> {
+            emit(Observer::onPowerEvent, msg, PowerInfo.class, MobileApi.KEY_POWER_INFO);
+        });
+        return ret;
+    }
+
     /** Handler of incoming messages from service. */
     private class IncomingHandler implements Handler.Callback {
+        final Map<Integer, MessageHandler> mMessageHandlers = makeMessageHandlers();
         @Override
         public boolean handleMessage(Message msg) {
-            if (MobileApi.MSG_FREEZE_CHANGED == msg.what) {
-                if (null != mObserver) {
-                    mObserver.onFrozen(msg.getData().getBoolean(MobileApi.KEY_FREEZE));
-                }
-                return true;
-            }
-            if (MobileApi.MSG_DEPTH_CHANGED == msg.what) {
-                if (null != mObserver) {
-                    mObserver.onDepthChanged(msg.getData().getDouble(MobileApi.KEY_DEPTH_CM));
-                }
-                return true;
-            }
-            if (MobileApi.MSG_GAIN_CHANGED == msg.what) {
-                if (null != mObserver) {
-                    mObserver.onGainChanged(msg.getData().getDouble(MobileApi.KEY_GAIN));
-                }
-                return true;
-            }
-            if (MobileApi.MSG_RETURN_STATUS == msg.what) {
-                int param = getCallbackParam(msg);
-                int status = getReturnStatus(msg);
-                Log.v(TAG, "Return status: " + status + ", param: " + param);
-                if (null != mObserver && MobileApi.MSG_REGISTER_CLIENT == param) {
-                    mObserver.onConnected(0 == status);
-                }
-                return true;
-            }
-            if (MobileApi.MSG_NEW_PROCESSED_IMAGE == msg.what) {
+            MessageHandler handler = mMessageHandlers.get(msg.what);
+            if (null != handler) {
                 try {
-                    onImageUpdated(msg.getData());
+                    handler.run(msg);
                 } catch (Throwable e) {
-                    logAndReportError("Error when receiving processed image: " + e);
+                    logAndReportError("Error when receiving message " + msg.what + ": " + e);
                 }
                 return true;
             }
-            if (MobileApi.MSG_BUTTON_EVENT == msg.what) {
-                try {
-                    onButtonEvent(msg.getData());
-                } catch (Throwable e) {
-                    logAndReportError("Error when receiving button event: " + e);
-                }
-                return true;
+            else {
+                return false;
             }
-            if (MobileApi.MSG_SCAN_AREA_CHANGED == msg.what) {
-                try {
-                    onScanAreaChanged(msg.getData());
-                } catch (Throwable e) {
-                    Log.e(TAG, "Error when receiving scan area geometry: " + e);
-                }
-                return true;
-            }
-            if (MobileApi.MSG_RETURN_SCAN_AREA == msg.what) {
-                Log.v(TAG, "MSG_RETURN_SCAN_AREA returned with callback param: " + getCallbackParam(msg));
-                try {
-                    onScanAreaChanged(msg.getData());
-                } catch (Throwable e) {
-                    Log.e(TAG, "Error when receiving scan area geometry: " + e);
-                }
-                return true;
-            }
-            if (MobileApi.MSG_RETURN_PROBE_INFO == msg.what) {
-                Log.v(TAG, "MSG_RETURN_PROBE_INFO returned with callback param: " + getCallbackParam(msg));
-                if (null != mObserver) {
-                    emit(mObserver::onProbeInfoReceived, msg, ProbeInfo.class, MobileApi.KEY_PROBE_INFO);
-                }
-                return true;
-            }
-            if (MobileApi.MSG_RETURN_PATIENT_INFO == msg.what) {
-                Log.v(TAG, "MSG_RETURN_PATIENT_INFO returned with callback param: " + getCallbackParam(msg));
-                if (null != mObserver) {
-                    emit(mObserver::onPatientInfoReceived, msg, PatientInfo.class, MobileApi.KEY_PATIENT_INFO);
-                }
-                return true;
-            }
-            if (MobileApi.MSG_NO_LICENSE == msg.what) {
-                logAndReportError("No license");
-                return true;
-            }
-            if (MobileApi.MSG_RETURN_FREEZE == msg.what) {
-                Log.v(TAG, "MSG_RETURN_FREEZE returned with callback param: " + getCallbackParam(msg));
-                if (null != mObserver) {
-                    mObserver.onFrozen(msg.getData().getBoolean(MobileApi.KEY_FREEZE));
-                }
-                return true;
-            }
-            if (MobileApi.MSG_RETURN_DEPTH == msg.what) {
-                Log.v(TAG, "MSG_RETURN_DEPTH returned with callback param: " + getCallbackParam(msg));
-                if (null != mObserver) {
-                    mObserver.onDepthChanged(msg.getData().getDouble(MobileApi.KEY_DEPTH_CM));
-                }
-                return true;
-            }
-            if (MobileApi.MSG_RETURN_GAIN == msg.what) {
-                Log.v(TAG, "MSG_RETURN_GAIN returned with callback param: " + getCallbackParam(msg));
-                if (null != mObserver) {
-                    mObserver.onGainChanged(msg.getData().getDouble(MobileApi.KEY_GAIN));
-                }
-                return true;
-            }
-            if (MobileApi.MSG_ERROR == msg.what) {
-                Bundle data = msg.getData();
-                String error = null != data ? data.getString(MobileApi.KEY_ERROR_MESSAGE, "<unknown>") : "<unknown>";
-                logAndReportError("Service error: " + error);
-                return true;
-            }
-            if (MobileApi.MSG_LICENSE_CHANGED == msg.what) {
-                if (null != mObserver) {
-                    mObserver.onLicenseChanged(msg.arg1 == 1);
-                }
-                return true;
-            }
-            if (MobileApi.MSG_RAW_DATA_AVAILABLE == msg.what) {
-                try {
-                    onRawDataAvailable(msg.getData());
-                } catch (Throwable e) {
-                    logAndReportError("Error when requesting raw data: " + e);
-                }
-                return true;
-            }
-            if (MobileApi.MSG_RAW_DATA_COPIED == msg.what) {
-                try {
-                    onRawDataCopied(msg.getData());
-                } catch (Throwable e) {
-                    logAndReportError("Error when copying raw data: " + e);
-                }
-                return true;
-            }
-            if (MobileApi.MSG_POWER_EVENT == msg.what) {
-                try {
-                    onPowerEvent(msg.getData());
-                } catch (Throwable e) {
-                    logAndReportError("Error when receiving power event: " + e);
-                }
-            }
-            return false;
         }
     }
 
@@ -505,59 +453,28 @@ public class MobileApiHelper {
     }
 
     /** Extract the image data received from the service. */
-    private void onImageUpdated(Bundle data) {
+    private void onImageUpdated(Message msg) {
         if (null == mObserver)
             return;
+        Bundle data = msg.getData();
         data.setClassLoader(ProcessedImageInfo.class.getClassLoader());
         ProcessedImageInfo info = data.getParcelable(MobileApi.KEY_IMAGE_INFO);
-        if (info == null) throw new AssertionError("image info missing");
+        if (info == null)
+            throw new AssertionError("image info missing");
         data.setClassLoader(PosInfo.class.getClassLoader());
         ArrayList<PosInfo> posInfo = data.getParcelableArrayList(MobileApi.KEY_POS_INFO);
         byte[] imageData = data.getByteArray(MobileApi.KEY_IMAGE_DATA);
-        if (imageData == null) throw new AssertionError("image data missing");
+        if (imageData == null)
+            throw new AssertionError("image data missing");
         Bitmap bitmap = BitmapFactory.decodeByteArray(imageData, 0, imageData.length);
-        if (bitmap == null) throw new AssertionError("bad image data");
+        if (bitmap == null)
+            throw new AssertionError("bad image data");
         mObserver.onNewProcessedImage(bitmap, info, posInfo);
     }
 
-    /** Helper to convert a parcelable from a Bundle and send it to the observer (field can be null). */
-    private <T> void emit(Consumer<T> fn, Message msg, Class<T> klass, String field) {
-        Bundle data = msg.getData();
-        data.setClassLoader(klass.getClassLoader());
-        fn.accept(data.getParcelable(field));
-    }
-
-    /** Extract the button event info received from the service. */
-    private void onButtonEvent(Bundle data) {
-        if (null == mObserver)
-            return;
-        data.setClassLoader(ButtonInfo.class.getClassLoader());
-        ButtonInfo info = data.getParcelable(MobileApi.KEY_BUTTON_INFO);
-        if (info == null) throw new AssertionError("button event info missing");
-        mObserver.onButtonEvent(info.id, info.clicks, info.longPress);
-    }
-
-    /** Extract the scan area geometry received from the service. */
-    private void onScanAreaChanged(Bundle data) {
-        if (null == mObserver)
-            return;
-        Rect imageArea = data.getParcelable(MobileApi.KEY_B_IMAGE_AREA);
-        if (imageArea == null) throw new AssertionError("B-image area info missing");
-        mObserver.onScanAreaChanged(imageArea);
-    }
-
-    /** Extract the power info received from the service. */
-    private void onPowerEvent(Bundle data) {
-        if (null == mObserver)
-            return;
-        data.setClassLoader(PowerInfo.class.getClassLoader());
-        PowerInfo powerInfo = data.getParcelable(MobileApi.KEY_POWER_INFO);
-        if (powerInfo == null) throw new AssertionError("Power info missing");
-        mObserver.onPowerEvent(powerInfo);
-    }
-
     /** When new raw data is available, print the details and send a request to copy the archive. */
-    private void onRawDataAvailable(Bundle data) throws IOException, RemoteException {
+    private void onRawDataAvailable(Message msg) throws IOException, RemoteException {
+        Bundle data = msg.getData();
         String captureId = data.getString(MobileApi.KEY_CAPTURE_ID);
         String fileName = data.getString(MobileApi.KEY_FILE_NAME);
         long sizeBytes = data.getLong(MobileApi.KEY_SIZE_BYTES);
@@ -566,16 +483,19 @@ public class MobileApiHelper {
             + ", file name: " + fileName
             + ", size (bytes): " + sizeBytes);
         RawDataHandle handle = RawDataHandle.create(mContext, mPackageName, captureId, fileName, sizeBytes);
-        Message msg = Message.obtain(null, MobileApi.MSG_COPY_RAW_DATA);
-        msg.replyTo = mMessenger;
+        Message reply = Message.obtain(null, MobileApi.MSG_COPY_RAW_DATA);
+        reply.replyTo = mMessenger;
         data.putParcelable(MobileApi.KEY_WRITABLE_URI, handle.mWritableUri);
-        msg.setData(data);
-        mService.send(msg);
+        reply.setData(data);
+        mService.send(reply);
         mRawDataMap.put(captureId, handle);
         Log.v(TAG, "Sent request to copy the raw data");
     }
 
-    private void onRawDataCopied(Bundle data) {
+    private void onRawDataCopied(Message msg) {
+        if (null == mObserver)
+            return;
+        Bundle data = msg.getData();
         String captureId = data.getString(MobileApi.KEY_CAPTURE_ID);
         RawDataHandle handle = mRawDataMap.get(captureId);
         if (data.containsKey(MobileApi.KEY_ERROR_MESSAGE)) {
