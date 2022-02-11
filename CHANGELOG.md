@@ -1,6 +1,19 @@
 Changelog
 =========
 
+# 9.2.0
+
+Added:
+- `MSG_RAW_DATA_AVAILABLE`: signal that new data is available in the Clarius App.
+- `MSG_COPY_RAW_DATA`: request a copy of a raw data archive from the Clarius App.
+- `MSG_RAW_DATA_COPIED`: raw data copy completion.
+
+Changed:
+- Modified how raw data is obtained: it must be obtained by doing a capture instead of requesting a download.
+
+Removed:
+- Raw data download messages `MSG_DOWNLOAD_RAW_DATA`, `MSG_RETURN_RAW_DATA`, `MSG_RAW_DATA_DOWNLOAD_PROGRESS`.
+
 # 9.0.0
 
 Added:
