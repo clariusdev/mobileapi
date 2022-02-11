@@ -5,8 +5,8 @@ Changelog
 
 Added:
 - `MSG_GET_FREEZE`: query freeze state without having to get notified.
-- `MSG_SET_SETTINGS_INFO`: set probe settings through the api
-- `MSG_COMPLETE_EXAM`: complete exam via store, discard, or shelve
+- `MSG_SET_SETTINGS_INFO`: set probe settings through the api.
+- `MSG_COMPLETE_EXAM`: complete exam via store, discard, or shelve.
 
 # 8.6.0
 
@@ -15,7 +15,7 @@ Added:
 - `MSG_3P_PACKAGE`: set Partner App launcher from the Clarius App.
 - `MSG_POWER_EVENT`: power events messages from server to client.
 - Query patient demographics with `MSG_GET_PATIENT_INFO` and `MSG_RETURN_PATIENT_INFO`.
- 
+
 Changed:
 - Freeze value returned in bundle data instead of `Message.arg1` in `MSG_FREEZE_CHANGED`.
 
