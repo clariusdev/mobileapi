@@ -18,6 +18,8 @@ import android.util.Log;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.function.Consumer;
 
 import me.clarius.mobileapi.ButtonInfo;
@@ -76,7 +78,7 @@ public class MobileApiHelper {
     private Observer mObserver = null;
 
     /** Keep track of raw data download requests. */
-    private RawDataDownload mRawDataDownload = null;
+    private Map<String, RawDataHandle> mRawDataMap = new HashMap<>();
 
     /**
      * Send important events to client.
@@ -93,9 +95,8 @@ public class MobileApiHelper {
         void onPatientInfoReceived(PatientInfo patientInfo);
         void onError(String msg);
         void onLicenseChanged(boolean hasLicense);
-        void onRawDataDownloaded(RawDataDownload download);
-        void onRawDataDownloadProgress(int progress);
         void onPowerEvent(PowerInfo powerInfo);
+        void onRawDataCopied(RawDataHandle handle);
     }
 
     /** Helper to report errors. */
@@ -277,34 +278,6 @@ public class MobileApiHelper {
         mService.send(msg);
     }
 
-    /**
-     * Ask the service to download raw data from the probe and save it in a file. Does nothing if not bound.
-     *
-     * Note: this command does not start the raw data collection.
-     * This must be done manually from the Clarius app.
-     */
-    public void downloadRawData() throws RemoteException, IOException {
-        if (!mBound)
-            return;
-        if (null != mRawDataDownload) {
-            Log.e(TAG, "Raw data download already in progress");
-            return;
-        }
-        Log.v(TAG, "Downloading raw data");
-        int startFrame = 0;
-        int endFrame = 0;
-        mRawDataDownload = RawDataDownload.create(mContext, mPackageName, startFrame, endFrame);
-        Message msg = Message.obtain(null, MobileApi.MSG_DOWNLOAD_RAW_DATA);
-        msg.replyTo = mMessenger;
-        setCallbackParam(msg, MobileApi.MSG_DOWNLOAD_RAW_DATA);
-        Bundle data = new Bundle();
-        data.putLong(MobileApi.KEY_START_FRAME, mRawDataDownload.startFrame);
-        data.putLong(MobileApi.KEY_END_FRAME, mRawDataDownload.endFrame);
-        data.putParcelable(MobileApi.KEY_WRITABLE_URI, mRawDataDownload.writableUri);
-        msg.setData(data);
-        mService.send(msg);
-    }
-
     /** Showing how to set the callback parameter that will be returned in MSG_RETURN_STATUS message. */
     static private void setCallbackParam(Message msg, int param) {
         msg.arg1 = param;
@@ -467,19 +440,19 @@ public class MobileApiHelper {
                 }
                 return true;
             }
-            if (MobileApi.MSG_RETURN_RAW_DATA == msg.what) {
-                Log.v(TAG, "MSG_RETURN_RAW_DATA returned with callback param: " + getCallbackParam(msg));
+            if (MobileApi.MSG_RAW_DATA_AVAILABLE == msg.what) {
                 try {
-                    onRawDataDownloaded(msg.getData());
+                    onRawDataAvailable(msg.getData());
                 } catch (Throwable e) {
-                    logAndReportError("Error when receiving raw data: " + e);
+                    logAndReportError("Error when requesting raw data: " + e);
                 }
                 return true;
             }
-            if (MobileApi.MSG_RAW_DATA_DOWNLOAD_PROGRESS == msg.what) {
-                Log.v(TAG, "MSG_RAW_DATA_DOWNLOAD_PROGRESS returned with callback param: " + getCallbackParam(msg) + " progress: " + msg.arg2);
-                if (null != mObserver) {
-                    mObserver.onRawDataDownloadProgress(msg.arg2);
+            if (MobileApi.MSG_RAW_DATA_COPIED == msg.what) {
+                try {
+                    onRawDataCopied(msg.getData());
+                } catch (Throwable e) {
+                    logAndReportError("Error when copying raw data: " + e);
                 }
                 return true;
             }
@@ -583,23 +556,35 @@ public class MobileApiHelper {
         mObserver.onPowerEvent(powerInfo);
     }
 
-    /** Extract the raw data info received from the service. */
-    private void onRawDataDownloaded(Bundle data) throws IOException {
-        if (null == mRawDataDownload)
-            throw new AssertionError("Received raw data download completion but request is missing");
-        RawDataDownload download = mRawDataDownload;
-        mRawDataDownload = null;
-        download.revokePermissions();
+    /** When new raw data is available, print the details and send a request to copy the archive. */
+    private void onRawDataAvailable(Bundle data) throws IOException, RemoteException {
+        String captureId = data.getString(MobileApi.KEY_CAPTURE_ID);
+        String fileName = data.getString(MobileApi.KEY_FILE_NAME);
+        long sizeBytes = data.getLong(MobileApi.KEY_SIZE_BYTES);
+        Log.v(TAG, "New raw data available"
+            + ", capture ID: " + captureId
+            + ", file name: " + fileName
+            + ", size (bytes): " + sizeBytes);
+        RawDataHandle handle = RawDataHandle.create(mContext, mPackageName, captureId, fileName, sizeBytes);
+        Message msg = Message.obtain(null, MobileApi.MSG_COPY_RAW_DATA);
+        msg.replyTo = mMessenger;
+        data.putParcelable(MobileApi.KEY_WRITABLE_URI, handle.mWritableUri);
+        msg.setData(data);
+        mService.send(msg);
+        mRawDataMap.put(captureId, handle);
+        Log.v(TAG, "Sent request to copy the raw data");
+    }
+
+    private void onRawDataCopied(Bundle data) {
+        String captureId = data.getString(MobileApi.KEY_CAPTURE_ID);
+        RawDataHandle handle = mRawDataMap.get(captureId);
         if (data.containsKey(MobileApi.KEY_ERROR_MESSAGE)) {
-            logAndReportError("Raw data download failed: " + data.getString(MobileApi.KEY_ERROR_MESSAGE));
+            logAndReportError("Failed to copy raw data for capture " + captureId
+                + ", error: " + data.getString(MobileApi.KEY_ERROR_MESSAGE));
         }
         else {
-            boolean available = data.getBoolean(MobileApi.KEY_AVAILABLE, false);
-            long packageSize = data.getLong(MobileApi.KEY_PACKAGE_SIZE, -1);
-            String packageExtension = data.getString(MobileApi.KEY_PACKAGE_EXTENSION);
-            Log.d(TAG, "Raw data available? " + available + ", size: " + packageSize + ", extension: " + packageExtension);
-            download.onReceived(available, packageSize, packageExtension);
-            mObserver.onRawDataDownloaded(download);
+            Log.v(TAG, "Raw data copied for capture ID " + captureId);
+            mObserver.onRawDataCopied(handle);
         }
     }
 }

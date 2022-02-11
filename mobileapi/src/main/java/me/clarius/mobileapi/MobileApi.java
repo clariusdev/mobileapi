@@ -71,7 +71,7 @@ public class MobileApi
     //! Command to the service to execute a user function.
     //!
     //! Parameter(s):
-    //! - Bundle[KEY_USER_FN]: java.lang.string, one of the predefined user functions from the USER_FN_* constants.
+    //! - Bundle[KEY_USER_FN]: java.lang.String, one of the predefined user functions from the USER_FN_* constants.
     //! - Bundle[KEY_USER_PARAM] (optional): double, parameter for the USER_FN_SET_* functions. Default: DEFAULT_USER_KEY_PARAM.
     //! - Message.replyTo (optional): if set, Messenger to send the MSG_RETURN_STATUS message to.
     //! - Message.arg1 (optional): callback parameter for MSG_RETURN_STATUS.
@@ -101,24 +101,6 @@ public class MobileApi
 
     public static final int MSG_GET_GAIN = 9;
 
-    //! Command to the service to download raw data from the probe.
-    //!
-    //! Note: this command does not start the raw data collection.
-    //! This must be done manually from the Clarius app.
-    //!
-    //! The reply will be delivered with message MSG_RETURN_RAW_DATA.
-    //!
-    //! Parameter(s):
-    //! - Bundle[KEY_START_FRAME]: long, starting frame timestamp (0 for all). Default: DEFAULT_FRAME.
-    //! - Bundle[KEY_END_FRAME]: long, ending frame timestamp (0 for all). Default: DEFAULT_FRAME.
-    //! - Bundle[KEY_WRITABLE_URI]: android.net.Uri, the file URI where the service will write the package. It must have permissions for the Clarius app.
-    //! - Message.replyTo: client's Messenger where the reply should be sent. This field is mandatory; if missing, the query will be ignored.
-    //! - Message.arg1 (optional): callback parameter for MSG_RETURN_RAW_DATA.
-    //!
-    //! \version Added in version 8.0.1
-
-    public static final int MSG_DOWNLOAD_RAW_DATA = 10;
-
     //! Query the service for the current patient info.
     //!
     //! The reply will be delivered with message MSG_RETURN_PATIENT_INFO.
@@ -134,7 +116,7 @@ public class MobileApi
     //! Command to the service to set the partner app package name.
     //!
     //! Parameter(s):
-    //! - Bundle[KEY_PACKAGE_NAME]: java.lang.string, the package name of the partner app, for example: "com.MyName.MyApp"
+    //! - Bundle[KEY_PACKAGE_NAME]: java.lang.String, the package name of the partner app, for example: "com.MyName.MyApp"
     //! - Message.replyTo (optional): if set, Messenger to send the MSG_RETURN_STATUS message to.
     //! - Message.arg1 (optional): callback parameter for MSG_RETURN_STATUS.
     //!
@@ -185,13 +167,30 @@ public class MobileApi
     //! Send complete exam message to the Clarius App.
     //!
     //! Parameter(s):
-    //! - Bundle[KEY_COMPLETE_EXAM]: complete exam enumeration (see COMPLETE_EXAM_XXX_
+    //! - Bundle[KEY_COMPLETE_EXAM]: int, one of the COMPLETE_EXAM_* constants. Default: COMPLETE_EXAM_FINISH.
     //! - Message.replyTo (optional): if set, Messenger to send the MSG_RETURN_STATUS message to.
     //! - Message.arg1 (optional): callback parameter for MSG_RETURN_STATUS.
     //!
     //! \version Added in version 9.0.0
 
     public static final int MSG_COMPLETE_EXAM = 16;
+
+    //! Get a copy of a raw data archive.
+    //!
+    //! This message is used to obtain a copy of a raw data archive received with message MSG_RAW_DATA_AVAILABLE.
+    //! The reply will be delivered with message MSG_RAW_DATA_COPIED.
+    //!
+    //! Parameter(s):
+    //! - Bundle[KEY_CAPTURE_ID]: java.lang.String, the capture identifier in UUID format.
+    //! - Bundle[KEY_WRITABLE_URI]: android.net.Uri, the file URI where the service will write the package. It must have permissions for the Clarius app.
+    //! - Message.replyTo: client's Messenger where the reply should be sent. This field is mandatory; if missing, the query will be ignored.
+    //! - Message.arg1 (optional): callback parameter for MSG_RAW_DATA_COPIED.
+    //!
+    //! The capture ID is obtained from message MSG_RAW_DATA_AVAILABLE.
+    //!
+    //! \version Added in version 9.2.0
+
+    public static final int MSG_COPY_RAW_DATA = 17;
 
     // Messages from server to client.
 
@@ -310,33 +309,6 @@ public class MobileApi
 
     public static final int MSG_RETURN_GAIN = 116;
 
-    //! Reply to queries MSG_DOWNLOAD_RAW_DATA.
-    //!
-    //! Parameters on success and failure:
-    //! - Message.arg1: callback parameter copied from the Message.arg1 sent by the client.
-    //!
-    //! Parameters on success:
-    //! - Bundle[KEY_AVAILABLE]: boolean, indicate if requested raw data was available.
-    //! - Bundle[KEY_PACKAGE_SIZE]: long, package size in bytes.
-    //! - Bundle[KEY_PACKAGE_EXTENSION]: java.lang.String, package extension (indicates type, for example zip or tar).
-    //!
-    //! Parameters on failure:
-    //! - Bundle[KEY_ERROR_MESSAGE]: java.lang.String, error details (in English).
-    //!
-    //! \version Added in version 8.0.1
-
-    public static final int MSG_RETURN_RAW_DATA = 117;
-
-    //! Reply to queries MSG_DOWNLOAD_RAW_DATA with the current download progress.
-    //!
-    //! Parameters:
-    //! - Message.arg1: callback parameter copied from the Message.arg1 sent by the client.
-    //! - Message.arg2: int, the raw data download progress in percent [0 100]
-    //!
-    //! \version Added in version 8.0.1
-
-    public static final int MSG_RAW_DATA_DOWNLOAD_PROGRESS = 118;
-
     //! Message to the client on power event.
     //!
     //! Parameters:
@@ -371,6 +343,39 @@ public class MobileApi
 
     public static final int MSG_RETURN_FREEZE = 121;
 
+    //! New raw data data available to download.
+    //!
+    //! Raw data workflow:
+    //! 1. When new raw data is available, the service will send MSG_RAW_DATA_AVAILABLE with a capture ID.
+    //! 2. To get a copy of the raw data, send MSG_COPY_RAW_DATA to the service with the capture ID in parameter and a writable URI.
+    //! 3. The service will write the corresponding raw data in the given writable URI and send MSG_RAW_DATA_COPIED on completion.
+    //!
+    //! Parameters:
+    //! - Bundle[KEY_CAPTURE_ID]: java.lang.String, the capture identifier in UUID format (without braces).
+    //! - Bundle[KEY_FILE_NAME]: java.lang.String, the archive file name.
+    //! - Bundle[KEY_SIZE_BYTES]: long, the archive size, in bytes.
+    //!
+    //! To download the archive, send MSG_COPY_RAW_DATA with the capture ID as parameter.
+    //!
+    //! \version Added in version 9.2.0
+
+    public static final int MSG_RAW_DATA_AVAILABLE = 122;
+
+    //! Reply to queries MSG_COPY_RAW_DATA.
+    //!
+    //! Parameters on success and failure:
+    //! - Bundle[KEY_CAPTURE_ID]: java.lang.String, the capture identifier in UUID format (without braces).
+    //! - Message.arg1: callback parameter copied from the Message.arg1 sent by the client.
+    //!
+    //! Parameters on failure:
+    //! - Bundle[KEY_ERROR_MESSAGE]: java.lang.String, error details (in English).
+    //!
+    //! The absence of error message means success.
+    //!
+    //! \version Added in version 9.2.0
+
+    public static final int MSG_RAW_DATA_COPIED = 123;
+
     // Bundle keys
 
     public static final String KEY_IMAGE_SIZE = "size";
@@ -397,9 +402,9 @@ public class MobileApi
     public static final String KEY_START_FRAME = "startFrame";
     public static final String KEY_END_FRAME = "endFrame";
     public static final String KEY_WRITABLE_URI = "writableUri";
-    public static final String KEY_PACKAGE_SIZE = "packageSize";
-    public static final String KEY_PACKAGE_EXTENSION = "packageExtension";
-    public static final String KEY_AVAILABLE = "available";
+    public static final String KEY_CAPTURE_ID = "captureID";
+    public static final String KEY_FILE_NAME = "fileName";
+    public static final String KEY_SIZE_BYTES = "sizeBytes";
 
     // Predefined bundle values
 

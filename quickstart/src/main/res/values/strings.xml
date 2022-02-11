@@ -19,7 +19,6 @@
     <string name="menu_action_ask_gain">Ask gain</string>
     <string name="menu_action_ask_freeze">Ask freeze state</string>
     <string name="menu_user_fn">User Fn</string>
-    <string name="menu_action_download_raw_data">Download raw data</string>
     <string name="menu_action_start_clarius_app">Start Clarius</string>
     <string name="dialog_value_title">Value to send</string>
     <string name="dialog_value_confirm">Send</string>

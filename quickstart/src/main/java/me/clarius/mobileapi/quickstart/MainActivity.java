@@ -84,7 +84,6 @@ public class MainActivity extends AppCompatActivity {
         ret.put(R.id.action_ask_depth, () -> sendBroadcast(new Intent(Intents.ASK_DEPTH)));
         ret.put(R.id.action_ask_gain, () -> sendBroadcast(new Intent(Intents.ASK_GAIN)));
         ret.put(R.id.action_ask_patient_info, () -> sendBroadcast(new Intent(Intents.ASK_PATIENT_INFO)));
-        ret.put(R.id.action_download_raw_data, () -> sendBroadcast(new Intent(Intents.DOWNLOAD_RAW_DATA)));
         ret.put(R.id.action_settings, () -> startActivity(new Intent(this, SettingsActivity.class)));
         ret.put(R.id.action_start_clarius_app, this::startClariusApp);
         return ret;

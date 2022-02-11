@@ -35,7 +35,7 @@ import me.clarius.mobileapi.ProcessedImageInfo;
 import me.clarius.mobileapi.ProbeInfo;
 import me.clarius.mobileapi.quickstart.helper.ImageConfig;
 import me.clarius.mobileapi.quickstart.helper.MobileApiHelper;
-import me.clarius.mobileapi.quickstart.helper.RawDataDownload;
+import me.clarius.mobileapi.quickstart.helper.RawDataHandle;
 
 public class ImageFragment extends Fragment {
 
@@ -77,7 +77,6 @@ public class ImageFragment extends Fragment {
         filter.addAction(Intents.ASK_GAIN);
         filter.addAction(Intents.ASK_PATIENT_INFO);
         filter.addAction(Intents.USER_FN);
-        filter.addAction(Intents.DOWNLOAD_RAW_DATA);
         requireContext().registerReceiver(mReceiver, filter);
     }
 
@@ -237,17 +236,10 @@ public class ImageFragment extends Fragment {
             }
         }
         @Override
-        public void onRawDataDownloaded(RawDataDownload download) {
-            boolean available = download.available;
-            long packageSize = download.packageSize;
-            String packageExtension = download.packageExtension;
-            String log = "Raw data available? " + available + " size: " + packageSize + " extension: " + packageExtension;
-            Log.i(TAG, log);
-            Toast.makeText(getContext(), log, Toast.LENGTH_SHORT).show();
-            download.shareFile(getActivity());
-        }
-        @Override
-        public void onRawDataDownloadProgress(int progress) {
+        public void onRawDataCopied(RawDataHandle handle) {
+            if (null != handle) {
+                handle.shareFile(getActivity());
+            }
         }
         private Map<Integer, String> powerStrings() {
             Map<Integer, String> strings = new HashMap<>();
@@ -282,7 +274,6 @@ public class ImageFragment extends Fragment {
             ret.put(Intents.ASK_FREEZE, (intent) -> mClarius.askFreeze());
             ret.put(Intents.ASK_DEPTH, (intent) -> mClarius.askDepth());
             ret.put(Intents.ASK_GAIN, (intent) -> mClarius.askGain());
-            ret.put(Intents.DOWNLOAD_RAW_DATA, (intent) -> mClarius.downloadRawData());
             ret.put(Intents.USER_FN, (intent) -> {
                 Bundle extras = intent.getExtras();
                 if (null != extras) {

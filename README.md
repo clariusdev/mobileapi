@@ -96,10 +96,26 @@ In this case, the service enters a restricted mode where it stops handling reque
 The license check workflow is as follows:
 
 1. The client binds to the service
-2. The service starts and accepts the bind request, regardless of the license status.
+2. The service starts and accepts the bind request, regardless of the license status
 3. Depending on the current license status:
     - if active, the service operates normally: all client requests are handled and all updates are sent to the clients;
-    - if inactive, the service enters restricted mode: no update is sent (except `MSG_LICENSE_UPDATE`) and no client request is handled (except `MSG_REGISTER_CLIENT` and `MSG_UNREGISTER_CLIENT`). The service will reply `MSG_NO_LICENSE` to any other request.
+    - if inactive, the service enters restricted mode: no update is sent (except `MSG_LICENSE_UPDATE`) and no client request is handled (except `MSG_REGISTER_CLIENT` and `MSG_UNREGISTER_CLIENT`). The service will reply `MSG_NO_LICENSE` to any other request
 4. If the license status changes during operation, the service sends `MSG_LICENSE_UPDATE` and changes its mode of operation:
-    - if the license becomes inactive: the service clears the image configuration and enter restricted mode;
-    - if the license becomes active: the service resumes normal operations, but the client must re-send the image configuration.
+    - if the license becomes inactive: the service clears the image configuration and enter restricted mode
+    - if the license becomes active: the service resumes normal operations, but the client must re-send the image configuration
+
+# Raw Data
+
+Workflow to obtain raw data:
+
+1. Activate raw data acquisition on the probe, see https://github.com/clariusdev/raw for instructions
+2. Make a capture from the Clarius App, this will trigger the following actions:
+    - download the raw data and store it in the examination data
+    - clear the probe's buffer
+    - notify the client with `MSG_RAW_DATA_AVAILABLE`
+3. In the client, send `MSG_COPY_RAW_DATA` to request a copy, include the following data:
+    - the capture's identifier and
+    - and a writable URI where the archive will be written, see https://developer.android.com/training/secure-file-sharing for details
+4. In the client, wait for the reply in message `MSG_RAW_DATA_COPIED`
+
+Note: it is possible to trigger a capture via the Mobile API with `MSG_USER_FN`.
