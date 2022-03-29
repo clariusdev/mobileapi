@@ -76,6 +76,7 @@ public class ImageFragment extends Fragment {
         filter.addAction(Intents.ASK_DEPTH);
         filter.addAction(Intents.ASK_GAIN);
         filter.addAction(Intents.ASK_PATIENT_INFO);
+        filter.addAction(Intents.SEND_PATIENT_INFO);
         filter.addAction(Intents.USER_FN);
         requireContext().registerReceiver(mReceiver, filter);
     }
@@ -274,6 +275,7 @@ public class ImageFragment extends Fragment {
             ret.put(Intents.ASK_FREEZE, (intent) -> mClarius.askFreeze());
             ret.put(Intents.ASK_DEPTH, (intent) -> mClarius.askDepth());
             ret.put(Intents.ASK_GAIN, (intent) -> mClarius.askGain());
+            ret.put(Intents.SEND_PATIENT_INFO, (intent) -> mClarius.sendPatientInfo());
             ret.put(Intents.USER_FN, (intent) -> {
                 Bundle extras = intent.getExtras();
                 if (null != extras) {

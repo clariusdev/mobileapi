@@ -23,4 +23,5 @@
     <string name="dialog_value_title">Value to send</string>
     <string name="dialog_value_confirm">Send</string>
     <string name="dialog_value_cancel">Cancel</string>
+    <string name="menu_action_send_patient_info">Send patient info</string>
 </resources>

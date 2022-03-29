@@ -268,6 +268,18 @@ public class MobileApiHelper {
         mService.send(msg);
     }
 
+    /** Showing how to populate the demographics page in the Clarius App. */
+    public void sendPatientInfo() throws RemoteException {
+        PatientInfo info = new PatientInfo();
+        info.id = "pid";
+        info.name = "last name";
+        Message msg = Message.obtain(null, MobileApi.MSG_SET_PATIENT_INFO);
+        Bundle data = new Bundle();
+        data.putParcelable(MobileApi.KEY_PATIENT_INFO, info);
+        msg.setData(data);
+        mService.send(msg);
+    }
+
     /** Showing how to set the callback parameter that will be returned in MSG_RETURN_STATUS message. */
     static private void setCallbackParam(Message msg, int param) {
         msg.arg1 = param;

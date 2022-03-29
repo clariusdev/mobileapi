@@ -52,6 +52,10 @@
         android:title="@string/menu_action_start_clarius_app"
         app:showAsAction="ifRoom" />
     <item
+        android:id="@+id/action_send_patient_info"
+        android:title="@string/menu_action_send_patient_info"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_user_fn"
         android:icon="@drawable/ic_baseline_functions_24"
         android:title="@string/menu_user_fn"
