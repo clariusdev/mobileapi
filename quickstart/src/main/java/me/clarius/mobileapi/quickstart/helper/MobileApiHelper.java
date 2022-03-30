@@ -270,6 +270,8 @@ public class MobileApiHelper {
 
     /** Showing how to populate the demographics page in the Clarius App. */
     public void sendPatientInfo() throws RemoteException {
+        if (!mBound)
+            return;
         PatientInfo info = new PatientInfo();
         info.id = "pid";
         info.name = "last name";
