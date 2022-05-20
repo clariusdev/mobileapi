@@ -1,0 +1,10 @@
+<resources>
+    <string name="settings_activity_title">Settings</string>
+    <string name="settings_category_title_imaging">Imaging</string>
+    <string name="settings_title_width">Width</string>
+    <string name="settings_title_height">Height</string>
+    <string name="settings_title_compression_type">Compression type</string>
+    <string name="settings_title_compression_quality">Compression quality</string>
+    <string name="settings_title_separate_overlays">Separate overlays</string>
+    <string name="settings_subtitle_separate_overlays">If set, two images are sent: one with overlays and one without.</string>
+</resources>

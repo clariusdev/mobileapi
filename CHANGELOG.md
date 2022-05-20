@@ -1,6 +1,12 @@
 Changelog
 =========
 
+# 9.4.0
+
+Changed:
+- The Mobile API is now distributed as an Android Package in the GitHub Gradle registry.
+- Renamed package from `me.clarius.mobileapi` to `me.clarius.sdk.mobileapi`.
+
 # 9.3.0
 
 Fixed:

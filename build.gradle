@@ -5,7 +5,7 @@ buildscript {
         mavenCentral()
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:7.0.0'
+        classpath 'com.android.tools.build:gradle:7.2.1'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -13,9 +13,20 @@ buildscript {
 }
 
 allprojects {
+    def secrets = new Properties()
+    secrets.load(new FileInputStream(rootProject.file("secrets.properties")))
     repositories {
         google()
         mavenCentral()
+        mavenLocal()
+        maven {
+            name = 'GitHubPackages'
+            url = uri('https://maven.pkg.github.com/clariusdev/mobileapi')
+            credentials {
+                username = secrets['gpr.user'] ?: System.getenv('GITHUB_ACTOR')
+                password = secrets['gpr.token'] ?: System.getenv('GITHUB_TOKEN')
+            }
+        }
     }
 }
 

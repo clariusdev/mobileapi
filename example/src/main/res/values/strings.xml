@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Mobile API Example</string>
+    <string name="desc_image">Where the ultrasound image will be displayed</string>
+    <string name="dialog_value_title">Value to send</string>
+    <string name="dialog_value_confirm">Send</string>
+    <string name="dialog_value_cancel">Cancel</string>
+</resources>

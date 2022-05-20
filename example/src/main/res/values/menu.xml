@@ -1,0 +1,14 @@
+<resources>
+    <string name="menu_title_user_fn">User Fn</string>
+    <string name="menu_action_settings">Settings</string>
+    <string name="menu_action_disconnect">Disconnect</string>
+    <string name="menu_action_connect">Connect</string>
+    <string name="menu_action_ask_scan_area">Ask scan area</string>
+    <string name="menu_action_ask_probe_info">Ask probe info</string>
+    <string name="menu_action_ask_patient_info">Ask patient info</string>
+    <string name="menu_action_ask_depth">Ask depth</string>
+    <string name="menu_action_ask_gain">Ask gain</string>
+    <string name="menu_action_ask_freeze">Ask freeze state</string>
+    <string name="menu_action_start_clarius_app">Start Clarius</string>
+    <string name="menu_action_send_patient_info">Send patient info</string>
+</resources>

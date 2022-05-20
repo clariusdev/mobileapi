@@ -1,3 +1,3 @@
-include ':mobileapi'
-include ':quickstart'
-rootProject.name = "Mobile API Quickstart"
+rootProject.name = "Clarius Mobile API"
+include ':helper'
+include ':example'

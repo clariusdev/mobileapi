@@ -1,0 +1,90 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="me.clarius.example.MainActivity">
+    <item
+        android:id="@+id/action_connect"
+        android:orderInCategory="0"
+        android:title="@string/menu_action_connect"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_disconnect"
+        android:orderInCategory="0"
+        android:title="@string/menu_action_disconnect"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="100"
+        android:title="@string/menu_action_settings"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_ask_scan_area"
+        android:orderInCategory="100"
+        android:title="@string/menu_action_ask_scan_area"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_ask_probe_info"
+        android:orderInCategory="100"
+        android:title="@string/menu_action_ask_probe_info"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_ask_patient_info"
+        android:orderInCategory="100"
+        android:title="@string/menu_action_ask_patient_info"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_ask_depth"
+        android:orderInCategory="100"
+        android:title="@string/menu_action_ask_depth"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_ask_gain"
+        android:orderInCategory="100"
+        android:title="@string/menu_action_ask_gain"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_ask_freeze"
+        android:orderInCategory="100"
+        android:title="@string/menu_action_ask_freeze"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_send_patient_info"
+        android:orderInCategory="100"
+        android:title="@string/menu_action_send_patient_info"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_start_clarius_app"
+        android:title="@string/menu_action_start_clarius_app"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_user_fn"
+        android:icon="@drawable/ic_baseline_functions_24"
+        android:title="@string/menu_title_user_fn"
+        app:showAsAction="ifRoom">
+        <menu>
+            <group android:id="@+id/group_user_fn_with_param">
+                <item android:title="@string/user_fn_SET_DEPTH" app:showAsAction="never" />
+                <item android:title="@string/user_fn_SET_GAIN" app:showAsAction="never" />
+            </group>
+            <group android:id="@+id/group_user_fn">
+                <item android:title="@string/user_fn_TOGGLE_FREEZE" app:showAsAction="never" />
+                <item android:title="@string/user_fn_CAPTURE_IMAGE" app:showAsAction="never" />
+                <item android:title="@string/user_fn_CAPTURE_CINE" app:showAsAction="never" />
+                <item android:title="@string/user_fn_DEPTH_DEC" app:showAsAction="never" />
+                <item android:title="@string/user_fn_DEPTH_INC" app:showAsAction="never" />
+                <item android:title="@string/user_fn_GAIN_DEC" app:showAsAction="never" />
+                <item android:title="@string/user_fn_GAIN_INC" app:showAsAction="never" />
+                <item android:title="@string/user_fn_TOGGLE_AUTOGAIN" app:showAsAction="never" />
+                <item android:title="@string/user_fn_TOGGLE_ZOOM" app:showAsAction="never" />
+                <item android:title="@string/user_fn_TOGGLE_FLIP" app:showAsAction="never" />
+                <item android:title="@string/user_fn_TOGGLE_CINE_PLAY" app:showAsAction="never" />
+                <item android:title="@string/user_fn_MODE_B" app:showAsAction="never" />
+                <item android:title="@string/user_fn_MODE_M" app:showAsAction="never" />
+                <item android:title="@string/user_fn_MODE_CFI" app:showAsAction="never" />
+                <item android:title="@string/user_fn_MODE_PDI" app:showAsAction="never" />
+                <item android:title="@string/user_fn_MODE_PW" app:showAsAction="never" />
+                <item android:title="@string/user_fn_MODE_ELASTOGRAPHY" app:showAsAction="never" />
+            </group>
+        </menu>
+    </item>
+</menu>
