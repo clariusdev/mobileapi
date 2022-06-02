@@ -1,6 +1,11 @@
 Changelog
 =========
 
+# 9.3.0
+
+Fixed:
+- Preventing crash when sending message `MSG_SET_SETTINGS_INFO`.
+
 # 9.2.0
 
 Added:
