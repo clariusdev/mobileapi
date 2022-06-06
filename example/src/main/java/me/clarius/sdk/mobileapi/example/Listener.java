@@ -96,8 +96,13 @@ public class Listener implements ApiHelper.Listener {
     }
 
     @Override
-    public void onFrozen(boolean frozen) {
+    public void onFrozenChanged(boolean frozen) {
         logToast("Frozen: " + frozen);
+    }
+
+    @Override
+    public void onFrozenReturned(boolean frozen) {
+        logToast("Reply for frozen: " + frozen);
     }
 
     @Override
@@ -108,10 +113,20 @@ public class Listener implements ApiHelper.Listener {
     }
 
     @Override
+    public void onDepthReturned(double cm) {
+        logToast("Reply for depth: " + depthProp.value + " cm");
+    }
+
+    @Override
     public void onGainChanged(double gain) {
         if (gainProp.update(doubleToShortString(gain))) {
             logToast("Gain: " + gainProp.value);
         }
+    }
+
+    @Override
+    public void onGainReturned(double gain) {
+        logToast("Reply for gain: " + gainProp.value);
     }
 
     @Override
@@ -132,6 +147,11 @@ public class Listener implements ApiHelper.Listener {
         if (scanAreaProp.update(rect)) {
             logToast("B-image area: " + rect);
         }
+    }
+
+    @Override
+    public void onScanAreaReturned(Rect rect) {
+        logToast("Reply for B-image area: " + rect);
     }
 
     @Override

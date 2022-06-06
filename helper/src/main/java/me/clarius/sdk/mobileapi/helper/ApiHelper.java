@@ -343,15 +343,13 @@ public class ApiHelper {
     private Map<Integer, MessageHandler> makeMessageHandlers() {
         HashMap<Integer, MessageHandler> ret = new HashMap<>();
         ret.put(MobileApi.MSG_FREEZE_CHANGED, (Message msg) -> {
-            if (null != mListener) mListener.onFrozen(msg.getData().getBoolean(MobileApi.KEY_FREEZE));
+            if (null != mListener) mListener.onFrozenChanged(msg.getData().getBoolean(MobileApi.KEY_FREEZE));
         });
         ret.put(MobileApi.MSG_DEPTH_CHANGED, (Message msg) -> {
-            if (null != mListener)
-                mListener.onDepthChanged(msg.getData().getDouble(MobileApi.KEY_DEPTH_CM));
+            if (null != mListener) mListener.onDepthChanged(msg.getData().getDouble(MobileApi.KEY_DEPTH_CM));
         });
         ret.put(MobileApi.MSG_GAIN_CHANGED, (Message msg) -> {
-            if (null != mListener)
-                mListener.onGainChanged(msg.getData().getDouble(MobileApi.KEY_GAIN));
+            if (null != mListener) mListener.onGainChanged(msg.getData().getDouble(MobileApi.KEY_GAIN));
         });
         ret.put(MobileApi.MSG_RETURN_STATUS, (Message msg) -> {
             int param = getCallbackParam(msg);
@@ -381,15 +379,13 @@ public class ApiHelper {
             reportError("No license");
         });
         ret.put(MobileApi.MSG_RETURN_FREEZE, (Message msg) -> {
-            if (null != mListener) mListener.onFrozen(msg.getData().getBoolean(MobileApi.KEY_FREEZE));
+            if (null != mListener) mListener.onFrozenReturned(msg.getData().getBoolean(MobileApi.KEY_FREEZE));
         });
         ret.put(MobileApi.MSG_RETURN_DEPTH, (Message msg) -> {
-            if (null != mListener)
-                mListener.onDepthChanged(msg.getData().getDouble(MobileApi.KEY_DEPTH_CM));
+            if (null != mListener) mListener.onDepthReturned(msg.getData().getDouble(MobileApi.KEY_DEPTH_CM));
         });
         ret.put(MobileApi.MSG_RETURN_GAIN, (Message msg) -> {
-            if (null != mListener)
-                mListener.onGainChanged(msg.getData().getDouble(MobileApi.KEY_GAIN));
+            if (null != mListener) mListener.onGainReturned(msg.getData().getDouble(MobileApi.KEY_GAIN));
         });
         ret.put(MobileApi.MSG_ERROR, (Message msg) -> {
             String error = msg.getData().getString(MobileApi.KEY_ERROR_MESSAGE, "<unknown>");
@@ -534,7 +530,7 @@ public class ApiHelper {
      */
     public interface Listener {
         void onConnected(boolean connected);
-        void onFrozen(boolean frozen);
+        void onFrozenChanged(boolean frozen);
         void onDepthChanged(double cm);
         void onGainChanged(double gain);
         void onNewProcessedImage(Bitmap imageData, ProcessedImageInfo imageInfo, ArrayList<PosInfo> posInfo);
@@ -547,6 +543,10 @@ public class ApiHelper {
         void onPowerEvent(PowerInfo powerInfo);
         void onRawDataAvailable(String captureId, String fileName, long sizeBytes);
         void onRawDataCopied(String captureId, Optional<String> error);
+        void onScanAreaReturned(Rect rect);
+        void onFrozenReturned(boolean frozen);
+        void onDepthReturned(double cm);
+        void onGainReturned(double gain);
     }
 
     interface MessageHandler {
