@@ -367,7 +367,7 @@ public class ApiHelper {
             emit(Listener::onScanAreaChanged, msg, null, MobileApi.KEY_B_IMAGE_AREA);
         });
         ret.put(MobileApi.MSG_RETURN_SCAN_AREA, (Message msg) -> {
-            emit(Listener::onScanAreaChanged, msg, null, MobileApi.KEY_B_IMAGE_AREA);
+            emit(Listener::onScanAreaReturned, msg, null, MobileApi.KEY_B_IMAGE_AREA);
         });
         ret.put(MobileApi.MSG_RETURN_PROBE_INFO, (Message msg) -> {
             emit(Listener::onProbeInfoReceived, msg, ProbeInfo.class, MobileApi.KEY_PROBE_INFO);
