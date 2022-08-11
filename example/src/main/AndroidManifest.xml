@@ -6,6 +6,7 @@
         <package android:name="me.clarius.clarius" />
         <package android:name="me.clarius.clarius.hotfix" />
         <package android:name="me.clarius.clarius.release" />
+        <package android:name="me.clarius.clarius.develop" />
         <package android:name="me.clarius.clarius.develop.developer.debug" />
     </queries>
 
