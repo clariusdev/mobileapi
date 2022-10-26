@@ -4,7 +4,7 @@ Changelog
 # 10.1.0
 
 Changed:
-- `Lister.onConnected()` no longer sends package names.
+- `Listener.onConnected()` no longer sends package names.
 
 Removed:
 - `ApiHelper.sendPackageName()`
