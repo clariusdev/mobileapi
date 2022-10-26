@@ -23,6 +23,6 @@ android {
 
 dependencies {
     implementation 'me.clarius.sdk:mobileapi:10.1.0'
-    implementation 'androidx.appcompat:appcompat:1.4.1'
-    implementation 'com.google.android.material:material:1.6.0'
+    implementation 'androidx.appcompat:appcompat:1.5.1'
+    implementation 'com.google.android.material:material:1.7.0'
 }
