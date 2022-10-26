@@ -4,7 +4,6 @@ Changelog
 # 10.1.0
 
 Changed:
-- Renamed package name from `me.clarius.clarius` to `me.clarius.clarius.develop.developer.debug`.
 - `Lister.onConnected()` no longer sends package names.
 
 Removed:
