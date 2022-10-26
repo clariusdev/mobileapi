@@ -185,22 +185,6 @@ public class ApiHelper {
     }
 
     /**
-     * Send the package name to the Clarius App so the "App Toggle" icon will show up and allow switching of applications.
-     */
-    public void sendPackageName() throws RemoteException {
-        if (!mBound)
-            return;
-        String packageName = mContext.getPackageName();
-        Log.v(TAG, "Sending package name" + packageName);
-        Message msg = Message.obtain(null, MobileApi.MSG_3P_PACKAGE);
-        msg.replyTo = mMessenger;
-        Bundle data = new Bundle();
-        data.putString(MobileApi.KEY_PACKAGE_NAME, packageName);
-        msg.setData(data);
-        mService.send(msg);
-    }
-
-    /**
      * Ask the service to give us the current scan area geometry. Does nothing if not bound.
      */
     public void askScanArea() throws RemoteException {
