@@ -1,6 +1,18 @@
 Changelog
 =========
 
+# 10.1.0
+
+Changed:
+- Renamed package name from `me.clarius.clarius` to `me.clarius.clarius.develop.developer.debug`.
+- `Lister.onConnected()` no longer sends package names.
+
+Removed:
+- `ApiHelper.sendPackageName()`
+- `Listener.sendPackageName()`
+- `MSG_3P_PACKAGE`
+- `KEY_PACKAGE_NAME`
+
 # 9.4.0
 
 Changed:
