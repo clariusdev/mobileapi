@@ -3,14 +3,10 @@ Changelog
 
 # 10.1.0
 
-Changed:
-- `Listener.onConnected()` no longer sends package names.
-
 Removed:
-- `ApiHelper.sendPackageName()`
-- `Listener.sendPackageName()`
-- `MSG_3P_PACKAGE`
-- `KEY_PACKAGE_NAME`
+- `MSG_3P_PACKAGE`: replaced by Clarius Marketplace launcher.
+- `KEY_PACKAGE_NAME`: replaced by Clarius Marketplace launcher.
+- Messages that can set the app state: `MSG_SET_PATIENT_INFO`, `MSG_SET_SETTINGS_INFO`, `MSG_COMPLETE_EXAM` and `KEY_COMPLETE_EXAM`.
 
 # 9.4.0
 

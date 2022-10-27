@@ -276,22 +276,6 @@ public class ApiHelper {
     }
 
     /**
-     * Populate the demographics page in the Clarius App. Does nothing if not bound.
-     */
-    public void sendPatientInfo() throws RemoteException {
-        if (!mBound)
-            return;
-        PatientInfo info = new PatientInfo();
-        info.id = "pid";
-        info.name = "last name";
-        Message msg = Message.obtain(null, MobileApi.MSG_SET_PATIENT_INFO);
-        Bundle data = new Bundle();
-        data.putParcelable(MobileApi.KEY_PATIENT_INFO, info);
-        msg.setData(data);
-        mService.send(msg);
-    }
-
-    /**
      * Copy raw data.
      *
      * @param captureId Capture identifier obtained in message MobileApi.MSG_RAW_DATA_AVAILABLE.

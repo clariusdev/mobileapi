@@ -102,7 +102,6 @@ public class MainActivity extends AppCompatActivity {
         ret.put(R.id.action_ask_depth, () -> api.askDepth());
         ret.put(R.id.action_ask_gain, () -> api.askGain());
         ret.put(R.id.action_ask_patient_info, () -> api.askPatientInfo());
-        ret.put(R.id.action_send_patient_info, () -> api.sendPatientInfo());
         ret.put(R.id.action_settings, this::showSettings);
         ret.put(R.id.action_start_clarius_app, () -> Utils.startClariusApp(this));
         return ret;
