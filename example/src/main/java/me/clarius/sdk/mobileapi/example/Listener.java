@@ -74,14 +74,6 @@ public class Listener implements ApiHelper.Listener {
         }
     }
 
-    private void sendPackageName() {
-        try {
-            api.sendPackageName();
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-    }
-
     private SharedPreferences getDefaultSharedPreferences() {
         return PreferenceManager.getDefaultSharedPreferences(context);
     }
@@ -91,7 +83,6 @@ public class Listener implements ApiHelper.Listener {
         logToast("Connected: " + connected);
         if (connected) {
             sendImageConfig(getDefaultSharedPreferences());
-            sendPackageName();
         }
     }
 

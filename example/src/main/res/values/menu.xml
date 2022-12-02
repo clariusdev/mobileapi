@@ -10,5 +10,4 @@
     <string name="menu_action_ask_gain">Ask gain</string>
     <string name="menu_action_ask_freeze">Ask freeze state</string>
     <string name="menu_action_start_clarius_app">Start Clarius</string>
-    <string name="menu_action_send_patient_info">Send patient info</string>
 </resources>
