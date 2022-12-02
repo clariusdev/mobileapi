@@ -1,25 +1,29 @@
-Changelog
-=========
+# Changelog
 
-# 10.1.0
+## 10.1.0
 
 Removed:
 - `MSG_3P_PACKAGE`: replaced by Clarius Marketplace launcher.
-- `KEY_PACKAGE_NAME`: replaced by Clarius Marketplace launcher.
-- Messages that can set the app state: `MSG_SET_PATIENT_INFO`, `MSG_SET_SETTINGS_INFO`, `MSG_COMPLETE_EXAM` and `KEY_COMPLETE_EXAM`.
+- `MSG_SET_PATIENT_INFO`: prevent setting the app state.
+- `MSG_SET_SETTINGS_INFO`: prevent setting the app state.
+- `MSG_COMPLETE_EXAM`: prevent setting the app state.
+- `SettingsInfo`: prevent setting the app state.
+- `KEY_PACKAGE_NAME`
+- `KEY_INFO_SETTINGS`
+- `KEY_COMPLETE_EXAM`
 
-# 9.4.0
+## 9.4.0
 
 Changed:
 - The Mobile API is now distributed as an Android Package in the GitHub Gradle registry.
 - Renamed package from `me.clarius.mobileapi` to `me.clarius.sdk.mobileapi`.
 
-# 9.3.0
+## 9.3.0
 
 Fixed:
 - Preventing crash when sending message `MSG_SET_SETTINGS_INFO`.
 
-# 9.2.0
+## 9.2.0
 
 Added:
 - `MSG_RAW_DATA_AVAILABLE`: signal that new data is available in the Clarius App.
@@ -32,14 +36,14 @@ Changed:
 Removed:
 - Raw data download messages `MSG_DOWNLOAD_RAW_DATA`, `MSG_RETURN_RAW_DATA`, `MSG_RAW_DATA_DOWNLOAD_PROGRESS`.
 
-# 9.0.0
+## 9.0.0
 
 Added:
 - `MSG_GET_FREEZE`: query freeze state without having to get notified.
 - `MSG_SET_SETTINGS_INFO`: set probe settings through the api.
 - `MSG_COMPLETE_EXAM`: complete exam via store, discard, or shelve.
 
-# 8.6.0
+## 8.6.0
 
 Added:
 - `MSG_SET_PATIENT_INFO`: set patient demographics in Clarius App.
@@ -55,7 +59,7 @@ Fixed:
 - Streaming images with the correct orientation.
 - Preventing crash when binding to Clarius app when it is not running.
 
-# 8.0.1
+## 8.0.1
 
 Changed:
 - Renamed `KEY_MESSAGE` to `KEY_ERROR_MESSAGE`.
@@ -74,6 +78,6 @@ Removed:
 - `KEY_ORIGIN_MICRONS`
 - `KEY_PIXEL_SIZE_MICRONS`
 
-# 7.3.0
+## 7.3.0
 
 - Initial release
