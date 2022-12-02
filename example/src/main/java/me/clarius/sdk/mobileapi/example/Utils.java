@@ -51,7 +51,9 @@ public class Utils {
     private static String toString(PackageInfo p) {
         StringBuilder ret = new StringBuilder("Package '");
         ret.append(p.packageName);
-        ret.append("' with service(s): ");
+        ret.append("' version ");
+        ret.append(p.versionName);
+        ret.append(" with service(s): ");
         if ((p.services != null) && (p.services.length > 0)) {
             List<String> names = Arrays.stream(p.services).map(s -> s.name).collect(Collectors.toList());
             ret.append(TextUtils.join(", ", names));
