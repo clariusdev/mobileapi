@@ -1,6 +1,6 @@
 # Changelog
 
-## 10.1.0
+## 10.1.1
 
 Removed:
 - `MSG_3P_PACKAGE`: replaced by Clarius Marketplace launcher.
