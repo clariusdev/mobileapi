@@ -69,26 +69,20 @@ The Mobile API communicates with the _Clarius App_ instead of the ultrasound sca
 Therefore, the Clarius App must be installed and running on the same Android device.
 The Clarius App takes care of connecting to the probe and pre-processing the images before serving them through the API.
 
-                            +-----------------------+
-                            |    Android Device     |
-                            |                       |
-    +---------+             |    +-------------+    |
-    |         |   Images    |    |             |    |
-    |  Probe  +----------------->+ Clarius App |    |
-    |         | (via Wi-Fi) |    |             |    |
-    +---------+             |    +-------------+    |
-                            |    | Mobile API  |    |
-                            |    +----+---+----+    |
-                            |         |   ^         |
-                            |   Images|   |Commands |
-                            |         v   |         |
-                            |    +----+---+----+    |
-                            |    |  3rd Party  |    |
-                            |    |     App     |    |
-                            |    +-------------+    |
-                            |                       |
-                            +-----------------------+
 
+```mermaid
+  flowchart LR
+  prb[Probe]
+  subgraph dev[Android Device]
+  3p[3rd Party App]
+    subgraph app[Clarius App]
+      api[Mobile API]
+    end
+    api-- Images -->3p
+    3p-- Commands -->api
+  end
+  prb-- Images/Wi-Fi -->app
+```
 
 # API Description
 
