@@ -4,4 +4,6 @@
     <string name="dialog_value_title">Value to send</string>
     <string name="dialog_value_confirm">Send</string>
     <string name="dialog_value_cancel">Cancel</string>
+    <string name="send_patient_id">Send patient ID</string>
+    <string name="send_patient_name">Send patient name</string>
 </resources>

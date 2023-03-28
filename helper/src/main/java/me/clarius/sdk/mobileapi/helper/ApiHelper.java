@@ -184,6 +184,18 @@ public class ApiHelper {
         mService.send(msg);
     }
 
+    public void sendPatientInfo(String patientId, String patientName) throws RemoteException {
+        if (!mBound)
+            return;
+        Log.v(TAG, "Sending patient info: patient id: " + patientId + " patient name: " + patientName);
+        Message msg = Message.obtain(null, MobileApi.MSG_SET_PATIENT_INFO);
+        msg.replyTo = mMessenger;
+        Bundle bundle = new Bundle();
+        bundle.putParcelable(MobileApi.KEY_PATIENT_INFO, new PatientInfo(patientId, patientName));
+        msg.setData(bundle);
+        mService.send(msg);
+    }
+
     /**
      * Ask the service to give us the current scan area geometry. Does nothing if not bound.
      */

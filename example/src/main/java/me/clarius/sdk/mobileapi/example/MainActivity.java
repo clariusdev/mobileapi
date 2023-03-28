@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import me.clarius.sdk.mobileapi.helper.ApiHelper;
 
@@ -23,6 +24,38 @@ public class MainActivity extends AppCompatActivity {
 
     private ApiHelper api;
     private final Map<Integer, MenuHandler> menuHandlers = makeMenuHandlers();
+
+    private void askText(String title, String hint, Consumer<String> consumer) {
+        EditText input = new EditText(this);
+        if (null != hint && !hint.isEmpty())
+            input.setHint(hint);
+        new AlertDialog.Builder(this)
+                .setTitle(title)
+                .setView(input)
+                .setPositiveButton(R.string.dialog_value_confirm, (dialog, whichButton) -> consumer.accept(input.getText().toString()))
+                .setNegativeButton(R.string.dialog_value_cancel, null)
+                .show();
+    }
+
+    private void sendPatientId() {
+        askText("Patient ID", "Patient ID", text -> {
+            try {
+                api.sendPatientInfo(text, null);
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    private void sendPatientName() {
+        askText("Patient Name", "Last, First", text -> {
+            try {
+                api.sendPatientInfo(null, text);
+            } catch (RemoteException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
 
     private void sendUserFn(MenuItem item) {
         EditText input = new EditText(this);
@@ -102,6 +135,8 @@ public class MainActivity extends AppCompatActivity {
         ret.put(R.id.action_ask_depth, () -> api.askDepth());
         ret.put(R.id.action_ask_gain, () -> api.askGain());
         ret.put(R.id.action_ask_patient_info, () -> api.askPatientInfo());
+        ret.put(R.id.action_send_patient_id, this::sendPatientId);
+        ret.put(R.id.action_send_patient_name, this::sendPatientName);
         ret.put(R.id.action_settings, this::showSettings);
         ret.put(R.id.action_start_clarius_app, () -> Utils.startClariusApp(this));
         return ret;

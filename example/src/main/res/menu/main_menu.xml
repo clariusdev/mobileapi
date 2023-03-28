@@ -18,6 +18,16 @@
         android:title="@string/menu_action_settings"
         app:showAsAction="never" />
     <item
+        android:id="@+id/action_send_patient_id"
+        android:orderInCategory="100"
+        android:title="@string/send_patient_id"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_send_patient_name"
+        android:orderInCategory="100"
+        android:title="@string/send_patient_name"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/action_ask_scan_area"
         android:orderInCategory="100"
         android:title="@string/menu_action_ask_scan_area"
