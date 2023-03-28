@@ -272,7 +272,7 @@ public class ApiHelper {
      * Run a user function on the scanner. Does nothing if not bound.
      *
      * @param fn The identifier of the function to run, one of MobileApi.USER_FN_* constants.
-     * @param param Parameter for user functions accepting a paremeter.
+     * @param param Parameter for user functions accepting a parameter.
      */
     public void userFn(String fn, double param) throws RemoteException {
         if (!mBound)
@@ -530,7 +530,7 @@ public class ApiHelper {
     }
 
     interface MessageHandler {
-        void run(Message msg) throws Exception;
+        void run(Message msg);
     }
 
     /**

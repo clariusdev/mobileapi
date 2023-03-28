@@ -1,6 +1,5 @@
 package me.clarius.sdk.mobileapi.helper;
 
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -22,9 +21,9 @@ public class RawDataHandle {
 
     private final Context mContext;
 
-    public String mCaptureId;
-    public long mSizeBytes;
-    public Uri mWritableUri;
+    public final String mCaptureId;
+    public final long mSizeBytes;
+    public final Uri mWritableUri;
 
     RawDataHandle(Context context, String captureId, long sizeBytes, Uri writableUri) {
         this.mContext = context;
@@ -61,14 +60,14 @@ public class RawDataHandle {
     /**
      * Export the download file somewhere using Android's native sharing view controller.
      */
-    public void shareFile(Activity activity) {
+    public void shareFile(Context context) {
         String mime = mContext.getContentResolver().getType(mWritableUri);
         Log.d(TAG, "Sharing raw data with MIME type: " + mime);
-        Intent intentShareFile = ShareCompat.IntentBuilder.from(activity)
+        Intent intentShareFile = new ShareCompat.IntentBuilder(context)
             .setStream(mWritableUri)
             .setType(mime)
             .getIntent()
             .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-        activity.startActivity(Intent.createChooser(intentShareFile, "Share File"));
+        context.startActivity(Intent.createChooser(intentShareFile, "Share File"));
     }
 }

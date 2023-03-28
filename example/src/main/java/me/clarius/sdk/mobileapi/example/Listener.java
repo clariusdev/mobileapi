@@ -17,6 +17,7 @@ import androidx.preference.PreferenceManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.Optional;
 
 import me.clarius.sdk.mobileapi.ButtonInfo;
@@ -47,7 +48,7 @@ public class Listener implements ApiHelper.Listener {
     private final Prop<Rect> scanAreaProp = new Prop<>();
 
     private static String doubleToShortString(double d) {
-        return String.format("%.2f", d);
+        return String.format(Locale.getDefault(), "%.2f", d);
     }
 
     public Listener(MainActivity context, ApiHelper api) {
@@ -182,22 +183,22 @@ public class Listener implements ApiHelper.Listener {
             + ", size (bytes): " + sizeBytes);
         try {
             RawDataHandle handle = rawDataMap.emplace(captureId, fileName, sizeBytes);
+            assert handle != null;
             api.copyRawData(captureId, handle.mWritableUri);
             logToast("Sent request to copy the raw data");
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (RemoteException e) {
+        } catch (IOException | RemoteException e) {
             e.printStackTrace();
         }
     }
 
     @Override
     public void onRawDataCopied(String captureId, Optional<String> error) {
-        RawDataHandle handle = rawDataMap.get(captureId);
         if (error.isPresent()) {
             logToast("Failed to copy raw data: " + error.get());
         } else {
             logToast("Raw data copied");
+            RawDataHandle handle = rawDataMap.get(captureId);
+            assert handle != null;
             handle.shareFile(context);
         }
     }
@@ -205,7 +206,7 @@ public class Listener implements ApiHelper.Listener {
     /**
      * A property emits a notification when its value was changed (here, it simply returns a boolean).
      */
-    class Prop<T> {
+    static class Prop<T> {
         T value;
 
         boolean update(T newValue) {
