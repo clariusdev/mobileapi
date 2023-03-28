@@ -18,8 +18,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import me.clarius.sdk.mobileapi.helper.ApiHelper;
-
 public class MainActivity extends AppCompatActivity {
 
     private ApiHelper api;

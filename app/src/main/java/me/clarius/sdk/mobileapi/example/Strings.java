@@ -1,4 +1,4 @@
-package me.clarius.sdk.mobileapi.helper;
+package me.clarius.sdk.mobileapi.example;
 
 import me.clarius.sdk.mobileapi.ButtonInfo;
 import me.clarius.sdk.mobileapi.PatientInfo;

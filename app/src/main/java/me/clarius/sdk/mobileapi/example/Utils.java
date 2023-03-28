@@ -17,8 +17,6 @@ import java.util.List;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
-import me.clarius.sdk.mobileapi.helper.ImageConfig;
-
 /**
  * Helper functions.
  */

@@ -30,11 +30,6 @@ allprojects {
             }
         }
     }
-    if (project.file("../libs/mobileapi-debug.aar").exists()) {
-        ext.mobileapi_lib = fileTree(dir: "../libs", include: 'mobileapi-debug.aar')
-    } else {
-        ext.mobileapi_lib = 'me.clarius.sdk:mobileapi:10.1.1'
-    }
 }
 
 task clean(type: Delete) {

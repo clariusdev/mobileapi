@@ -26,10 +26,6 @@ import me.clarius.sdk.mobileapi.PosInfo;
 import me.clarius.sdk.mobileapi.PowerInfo;
 import me.clarius.sdk.mobileapi.ProbeInfo;
 import me.clarius.sdk.mobileapi.ProcessedImageInfo;
-import me.clarius.sdk.mobileapi.helper.ApiHelper;
-import me.clarius.sdk.mobileapi.helper.RawDataHandle;
-import me.clarius.sdk.mobileapi.helper.RawDataHandleMap;
-import me.clarius.sdk.mobileapi.helper.Strings;
 
 /**
  * Observe events from the service.

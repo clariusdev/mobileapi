@@ -1,4 +1,4 @@
-package me.clarius.sdk.mobileapi.helper;
+package me.clarius.sdk.mobileapi.example;
 
 import android.os.Bundle;
 import android.util.Size;
