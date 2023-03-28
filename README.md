@@ -69,11 +69,10 @@ The Mobile API communicates with the _Clarius App_ instead of the ultrasound sca
 Therefore, the Clarius App must be installed and running on the same Android device.
 The Clarius App takes care of connecting to the probe and pre-processing the images before serving them through the API.
 
-
 ```mermaid
-  flowchart LR
-  prb[Probe]
-  subgraph dev[Android Device]
+flowchart LR
+prb[Probe]
+subgraph dev[Android Device]
   3p[3rd Party App]
     subgraph app[Clarius App]
       api[Mobile API]
@@ -81,13 +80,13 @@ The Clarius App takes care of connecting to the probe and pre-processing the ima
     api-- Images -->3p
     3p-- Commands -->api
   end
-  prb-- Images/Wi-Fi -->app
+prb-- Images/Wi-Fi -->app
 ```
 
 # API Description
 
 On Android, the Mobile API is implemented as an Android _Bound Service_ running in the Clarius App itself.
-Refer to the [Android developer guide](android-bound-services) for details about bound services.
+Refer to the [Android developer guide][android-bound-services] for details about bound services.
 
 The interface to the bound service is provided by an Android _Messenger_.
 Android Messengers allow interprocess communications (IPC) by exchanging `Message` objects containing an action code and a payload.
@@ -134,15 +133,13 @@ The license check workflow is as follows:
 Workflow to obtain raw data:
 
 1. Activate raw data acquisition on the probe, see https://github.com/clariusdev/raw for instructions
-2. Make a capture from the Clarius App, this will trigger the following actions:
+2. Make a capture from the Clarius App or with `MSG_USER_FN`, this will trigger the following actions:
     - download the raw data and store it in the examination data
     - clear the probe's buffer
     - notify the client with `MSG_RAW_DATA_AVAILABLE`
 3. In the client, send `MSG_COPY_RAW_DATA` to request a copy, include the following data:
     - the capture's identifier and
-    - and a writable URI where the archive will be written, refer to the [Android developer guide](android-file-sharing) for details about file sharing
+    - and a writable URI where the archive will be written, refer to the [Android developer guide][android-file-sharing] for details about file sharing
 4. In the client, wait for the reply in message `MSG_RAW_DATA_COPIED`
-
-Note: it is possible to trigger a capture via the Mobile API with `MSG_USER_FN`.
 
 [android-file-sharing]: https://developer.android.com/training/secure-file-sharing
