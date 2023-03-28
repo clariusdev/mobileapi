@@ -42,6 +42,6 @@ dependencies {
     implementation 'androidx.navigation:navigation-fragment:2.5.3'
     implementation 'androidx.navigation:navigation-ui:2.5.3'
     implementation 'androidx.preference:preference:1.2.0'
-    implementation 'me.clarius.sdk:mobileapi:10.1.1'
+    implementation mobileapi_lib
     implementation project(path: ':helper')
 }

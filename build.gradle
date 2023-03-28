@@ -14,7 +14,9 @@ buildscript {
 
 allprojects {
     def secrets = new Properties()
-    secrets.load(new FileInputStream(rootProject.file("secrets.properties")))
+    if (rootProject.file("secrets.properties").exists()) {
+        secrets.load(new FileInputStream(rootProject.file("secrets.properties")))
+    }
     repositories {
         google()
         mavenCentral()
@@ -27,6 +29,11 @@ allprojects {
                 password = secrets['gpr.token'] ?: System.getenv('GITHUB_TOKEN')
             }
         }
+    }
+    if (project.file("../libs/mobileapi-debug.aar").exists()) {
+        ext.mobileapi_lib = fileTree(dir: "../libs", include: 'mobileapi-debug.aar')
+    } else {
+        ext.mobileapi_lib = 'me.clarius.sdk:mobileapi:10.1.1'
     }
 }
 
