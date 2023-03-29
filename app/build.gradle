@@ -42,8 +42,10 @@ dependencies {
     implementation 'androidx.navigation:navigation-fragment:2.5.3'
     implementation 'androidx.navigation:navigation-ui:2.5.3'
     implementation 'androidx.preference:preference:1.2.0'
-    if (rootProject.file("./libs/mobileapi-debug.aar").exists()) {
+    if (project.file("../libs/mobileapi-debug.aar").exists()) {
         implementation fileTree(dir: "../libs", include: 'mobileapi-debug.aar')
+    } else if (project.file("../../libs/mobileapi-debug.aar").exists()) {
+        implementation fileTree(dir: "../../libs", include: 'mobileapi-debug.aar')
     } else {
         implementation 'me.clarius.sdk:mobileapi:10.1.1'
     }
