@@ -30,7 +30,7 @@ Refer to the [GitHub documentation][github-pat] for instructions to generate tok
 1. Create a file `secrets.properties` in the project's root folder (which will be read by the Gradle build script) with the following content:
 
         // file /secrets.properties
-        // do not put quotes (') around the values 
+        // do not put quotes (') around the values
         gpr.user=your_user_name
         gpr.token=personal_access_token_with_read_packages_scope
 
