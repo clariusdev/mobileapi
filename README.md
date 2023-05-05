@@ -16,7 +16,7 @@ Note: Virtual scanners are supported without a license since version 8.0.1.
 
 # SDK reference
 
-https://clariusdev.github.io/mobileapi/reference/10.1.1
+https://clariusdev.github.io/mobileapi/reference/10.3.0
 
 
 # Get the package
