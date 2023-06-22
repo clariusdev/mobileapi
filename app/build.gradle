@@ -47,6 +47,6 @@ dependencies {
     } else if (project.file("../../libs/mobileapi-debug.aar").exists()) {
         implementation fileTree(dir: "../../libs", include: 'mobileapi-debug.aar')
     } else {
-        implementation 'me.clarius.sdk:mobileapi:10.1.1'
+        implementation 'me.clarius.sdk:mobileapi:10.3.0'
     }
 }
